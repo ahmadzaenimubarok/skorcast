@@ -28,7 +28,7 @@
     {{-- Create Form (only in active tab) --}}
     @if(!$showArchived)
     <form wire:submit="create" class="mb-8 space-y-4">
-        <div class="flex gap-3">
+        <div class="flex flex-col sm:flex-row gap-3">
             <input
                 wire:model="newName"
                 type="text"
@@ -42,6 +42,7 @@
                 + Buat
             </button>
         </div>
+        @error('newName') <p class="text-xs text-red-400 mt-1">{{ $message }}</p> @enderror
 
         {{-- Opsi: maksimal peserta + kelompok (opsional) --}}
         <div class="flex flex-wrap items-center gap-x-6 gap-y-3 px-4 py-3 bg-gray-800/40 border border-gray-700 rounded-lg">
@@ -133,9 +134,7 @@
                             @else bg-emerald-900/50 text-emerald-300 border border-emerald-700
                             @endif
                         ">
-                            @if($t->status === 'archived') Diarsipkan
-                            @else {{ $t->status }}
-                            @endif
+                            {{ $t->statusLabel() }}
                         </span>
                         <span class="text-gray-600 group-hover:text-gray-400">→</span>
                     </div>

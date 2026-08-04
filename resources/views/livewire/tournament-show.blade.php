@@ -12,11 +12,21 @@
                     @else bg-emerald-900/50 text-emerald-300 border border-emerald-700
                     @endif
                 ">
-                    @if($tournament->status === 'archived') Diarsipkan
-                    @else {{ $tournament->status }}
-                    @endif
+                    {{ $tournament->statusLabel() }}
                 </span>
-                <span class="text-sm text-gray-500">Kode publik: <code class="text-emerald-400 bg-gray-800 px-2 py-0.5 rounded">{{ $tournament->code }}</code></span>
+                <span class="text-sm text-gray-500 flex items-center gap-1.5" x-data="{ copied: false }">
+                    Kode publik:
+                    <button type="button" @click="navigator.clipboard.writeText('{{ $tournament->code }}'); copied = true; setTimeout(() => copied = false, 2000)"
+                            class="inline-flex items-center gap-1.5 group" :title="copied ? 'Tersalin!' : 'Salin kode'">
+                        <code class="text-emerald-400 bg-gray-800 px-2 py-0.5 rounded group-hover:bg-gray-700 transition-colors">{{ $tournament->code }}</code>
+                        <svg x-show="!copied" class="w-4 h-4 text-gray-500 group-hover:text-gray-300 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+                        </svg>
+                        <svg x-show="copied" x-cloak class="w-4 h-4 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                    </button>
+                </span>
                 @if($tournament->status === 'draft')
                     <span class="text-sm text-gray-500 ml-2">
                         Format:
@@ -182,7 +192,7 @@
 
                 @if(!$tournament->max_participants || $tournament->participants->count() < $tournament->max_participants)
                 <form wire:submit="addParticipant" class="mb-6">
-                    <div class="flex gap-3">
+                    <div class="flex flex-col sm:flex-row gap-3">
                         <input
                             wire:model="participantName"
                             type="text"
@@ -201,6 +211,7 @@
                             + Tambah
                         </button>
                     </div>
+                    @error('participantName') <p class="text-xs text-red-400 mt-1">{{ $message }}</p> @enderror
                     @if($tournament->use_groups && $tournament->groupCapacity())
                         <p class="mt-2 text-xs text-gray-500">Kuota per kelompok: maksimal {{ $tournament->groupCapacity() }} peserta ({{ $tournament->group_count }} kelompok × rata).</p>
                     @endif
@@ -244,24 +255,28 @@
             @if($tournament->participants->count() >= 2 && $tournament->status === 'draft')
                 <div class="mb-6 flex flex-wrap items-center gap-3">
                     @if($tournament->use_groups)
-                        <button wire:click="generateTeams('random')" class="h-11 px-5 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-lg transition-colors text-sm">
-                            🔄 Generate Acak (campur)
+                        <button wire:click="generateTeams('random')" class="h-11 px-5 inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-lg transition-colors text-sm">
+                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+                            <span>Generate Acak (campur)</span>
                         </button>
-                        <button wire:click="generateTeams('byGroup')" class="h-11 px-5 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-700 font-medium rounded-lg transition-colors text-sm">
-                            🏷️ Generate Per Kelompok
+                        <button wire:click="generateTeams('byGroup')" class="h-11 px-5 inline-flex items-center gap-2 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-700 font-medium rounded-lg transition-colors text-sm">
+                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.83z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                            <span>Generate Per Kelompok</span>
                         </button>
                         <p class="w-full text-xs text-gray-500">
                             Acak = campur antar kelompok (fun) · Per Kelompok = pasang 2-2 dalam kelompok, 1 kelompok bisa jadi beberapa tim
                         </p>
                     @else
-                        <button wire:click="generateTeams('random')" class="h-11 px-5 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-lg transition-colors text-sm">
-                            🔄 Generate Tim (acak)
+                        <button wire:click="generateTeams('random')" class="h-11 px-5 inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-lg transition-colors text-sm">
+                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+                            <span>Generate Tim (acak)</span>
                         </button>
                     @endif
 
                     @if(($tournament->teams->count() > 0 || $tournament->gameMatches->count() > 0) && $tournament->status === 'draft')
-                        <button wire:click="generateBracket" class="h-11 px-5 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-700 font-medium rounded-lg transition-colors text-sm">
-                            🏆 Generate Bracket
+                        <button wire:click="generateBracket" class="h-11 px-5 inline-flex items-center gap-2 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-700 font-medium rounded-lg transition-colors text-sm">
+                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 010-5H6"/><path d="M18 9h1.5a2.5 2.5 0 000-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0012 0V2z"/></svg>
+                            <span>Generate Bracket</span>
                         </button>
                     @endif
                 </div>
