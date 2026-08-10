@@ -26,6 +26,16 @@ class PublicTournamentsTest extends TestCase
             ->assertDontSee('Draft'); // label publik bukan 'draft' lagi
     }
 
+    public function test_private_tournaments_hidden_from_public_list(): void
+    {
+        Tournament::create(['name' => 'Turnamen Publik', 'status' => Tournament::STATUS_DRAFT, 'is_public' => true]);
+        Tournament::create(['name' => 'Turnamen Privat', 'status' => Tournament::STATUS_DRAFT, 'is_public' => false]);
+
+        Livewire::test(\App\Livewire\PublicTournaments::class)
+            ->assertSee('Turnamen Publik')
+            ->assertDontSee('Turnamen Privat');
+    }
+
     public function test_draft_links_to_registration_page(): void
     {
         $draft = Tournament::create(['name' => 'Piala Baru', 'status' => Tournament::STATUS_DRAFT]);

@@ -36,6 +36,20 @@
                         </select>
                     </span>
                 @endif
+                <span class="text-sm text-gray-500 flex items-center gap-2 ml-2">
+                    Visibilitas:
+                    <button type="button" wire:click="toggleVisibility"
+                            class="relative inline-flex items-center h-6 w-11 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500/50
+                                {{ $tournament->is_public ? 'bg-emerald-600' : 'bg-gray-600' }}"
+                            role="switch" aria-checked="{{ $tournament->is_public ? 'true' : 'false' }}"
+                            :title="'{{ $tournament->is_public ? 'Klik untuk privat' : 'Klik untuk publik' }}'">
+                        <span class="inline-block w-4 h-4 transform rounded-full bg-white transition-transform
+                            {{ $tournament->is_public ? 'translate-x-[1.4rem]' : 'translate-x-1' }}"></span>
+                    </button>
+                    <span class="text-xs font-medium {{ $tournament->is_public ? 'text-emerald-400' : 'text-gray-400' }}">
+                        {{ $tournament->is_public ? 'Publik' : 'Privat' }}
+                    </span>
+                </span>
             </div>
         </div>
         <div class="flex flex-wrap gap-2"

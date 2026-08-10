@@ -453,6 +453,20 @@ class TournamentShow extends Component
         session()->flash('message', 'Format pertandingan diubah ke ' . ($gamesToWin === 1 ? '1 game (langsung selesai)' : 'Best of 3'));
     }
 
+    /** Toggle visibilitas turnamen di daftar publik (/turnamen). */
+    public function toggleVisibility(): void
+    {
+        $this->tournament->update(['is_public' => ! $this->tournament->is_public]);
+        $this->tournament->refresh();
+
+        session()->flash(
+            'message',
+            $this->tournament->is_public
+                ? 'Turnamen publik — tampil di daftar turnamen.'
+                : 'Turnamen privat — disembunyikan dari daftar turnamen.'
+        );
+    }
+
     public function startMatch($matchId)
     {
         if (! $this->ensureStatus('Mulai turnamen terlebih dahulu.', Tournament::STATUS_ONGOING)) {

@@ -21,12 +21,13 @@ class Tournament extends Model
         self::STATUS_ARCHIVED,
     ];
 
-    protected $fillable = ['name', 'code', 'status', 'original_status', 'games_to_win', 'max_participants', 'use_groups', 'group_count', 'group_names'];
+    protected $fillable = ['name', 'code', 'status', 'original_status', 'games_to_win', 'max_participants', 'use_groups', 'group_count', 'group_names', 'is_public'];
 
     protected $attributes = [
         'status' => 'draft',
         'games_to_win' => 2,
         'use_groups' => false,
+        'is_public' => true,
     ];
 
     protected function casts(): array
@@ -38,6 +39,7 @@ class Tournament extends Model
             'use_groups' => 'boolean',
             'group_count' => 'integer',
             'group_names' => 'array',
+            'is_public' => 'boolean',
         ];
     }
 

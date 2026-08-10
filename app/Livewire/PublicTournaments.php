@@ -17,6 +17,7 @@ class PublicTournaments extends Component
     {
         $all = Tournament::query()
             ->where('status', '!=', Tournament::STATUS_ARCHIVED)
+            ->where('is_public', true)
             ->withCount(['participants', 'teams'])
             ->orderBy('created_at', 'desc')
             ->get();
