@@ -7,7 +7,7 @@ use App\Models\Tournament;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-#[Layout('layouts.public')]
+#[Layout('layouts.public', params: ['title' => 'Live Bracket — Skor Cast'])]
 class PublicBracket extends Component
 {
     use ComputesBracketLayout;

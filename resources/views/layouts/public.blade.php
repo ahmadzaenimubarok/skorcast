@@ -3,7 +3,9 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>🏸 Live Bracket — Skor Cast</title>
+    <title>{{ $title ?? 'Skor Cast — Turnamen & Skor Badminton' }}</title>
+    <meta name="description" content="{{ $description ?? 'Skor Cast — aplikasi turnamen & skor badminton untuk komunitas. Peserta daftar lewat link, skor masuk dari HP, bracket tersusun otomatis.' }}">
+    <meta name="robots" content="index, follow, max-image-preview:large">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
     <style>

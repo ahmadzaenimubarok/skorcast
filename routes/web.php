@@ -3,6 +3,7 @@
 use App\Livewire\AdminLogin;
 use App\Livewire\PublicBracket;
 use App\Livewire\PublicScoreboard;
+use App\Livewire\PublicTournaments;
 use App\Livewire\RegistrationPage;
 use App\Livewire\Scoreboard;
 use App\Livewire\TournamentIndex;
@@ -33,3 +34,6 @@ Route::get('/r/{code}', RegistrationPage::class)->name('registration.show');
 
 // Scoreboard publik standalone — tanpa turnamen, tanpa tim, tanpa kode. Langsung main.
 Route::get('/s', PublicScoreboard::class)->name('public.scoreboard');
+
+// Daftar turnamen publik — tanpa login: belum mulai, berjalan, selesai.
+Route::get('/turnamen', PublicTournaments::class)->name('public.tournaments');
