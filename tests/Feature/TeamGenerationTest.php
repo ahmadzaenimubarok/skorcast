@@ -193,6 +193,79 @@ class TeamGenerationTest extends TestCase
         $this->assertEquals(0, $t->teams()->count(), 'Tim dibongkar');
     }
 
+    public function test_singles_mode_creates_one_team_per_participant(): void
+    {
+        $t = Tournament::create([
+            'name' => 'Turnamen Tunggal',
+            'play_mode' => Tournament::PLAY_MODE_SINGLES,
+            'use_groups' => false,
+        ]);
+
+        foreach (['Andi', 'Budi', 'Cici', 'Dedi', 'Eka'] as $n) {
+            $t->participants()->create(['name' => $n, 'group_name' => null]);
+        }
+
+        Livewire::test(TournamentShow::class, ['tournament' => $t])
+            ->call('generateTeams', 'random')
+            ->assertHasNoErrors();
+
+        $t->load('teams.members');
+        $this->assertEquals(5, $t->teams()->count(), '5 pemain -> 5 tim (1 pemain = 1 tim)');
+
+        $names = $t->teams->pluck('name')->sort()->values()->all();
+        $this->assertEquals(['Andi', 'Budi', 'Cici', 'Dedi', 'Eka'], $names, 'Nama tim = nama pemain');
+
+        // Setiap tim berisi tepat 1 anggota
+        foreach ($t->teams as $team) {
+            $this->assertEquals(1, $team->members->count(), "Tim {$team->name} harus 1 orang");
+        }
+    }
+
+    public function test_singles_mode_by_group_keeps_group_name(): void
+    {
+        $t = Tournament::create([
+            'name' => 'Tunggal Berkelompok',
+            'play_mode' => Tournament::PLAY_MODE_SINGLES,
+            'use_groups' => true,
+            'group_count' => 2,
+            'group_names' => ['Putra', 'Putri'],
+        ]);
+
+        $t->participants()->create(['name' => 'Andi', 'group_name' => 'Putra']);
+        $t->participants()->create(['name' => 'Budi', 'group_name' => 'Putra']);
+        $t->participants()->create(['name' => 'Cici', 'group_name' => 'Putri']);
+
+        Livewire::test(TournamentShow::class, ['tournament' => $t])
+            ->call('generateTeams', 'byGroup')
+            ->assertHasNoErrors();
+
+        $t->load('teams.members');
+        $this->assertEquals(3, $t->teams()->count(), '3 pemain -> 3 tim');
+
+        $putra = $t->teams->where('group_name', 'Putra');
+        $putri = $t->teams->where('group_name', 'Putri');
+        $this->assertEquals(2, $putra->count());
+        $this->assertEquals(1, $putri->count());
+        $this->assertEquals(['Andi', 'Budi'], $putra->pluck('name')->sort()->values()->all());
+    }
+
+    public function test_set_play_mode_updates_tournament(): void
+    {
+        $t = Tournament::create(['name' => 'Ubah Mode']);
+
+        Livewire::test(TournamentShow::class, ['tournament' => $t])
+            ->call('setPlayMode', Tournament::PLAY_MODE_SINGLES)
+            ->assertHasNoErrors();
+
+        $this->assertEquals(Tournament::PLAY_MODE_SINGLES, $t->refresh()->play_mode);
+
+        // Set ke mode tidak valid harus diabaikan
+        Livewire::test(TournamentShow::class, ['tournament' => $t])
+            ->call('setPlayMode', 'triple')
+            ->assertHasNoErrors();
+        $this->assertEquals(Tournament::PLAY_MODE_SINGLES, $t->refresh()->play_mode);
+    }
+
     public function test_generate_teams_again_clears_old_bracket(): void
     {
         $t = $this->tournamentWithGroups();

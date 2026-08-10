@@ -21,13 +21,23 @@ class Tournament extends Model
         self::STATUS_ARCHIVED,
     ];
 
-    protected $fillable = ['name', 'code', 'status', 'original_status', 'games_to_win', 'max_participants', 'use_groups', 'group_count', 'group_names', 'is_public'];
+    // Mode bermain — sumber kebenaran tunggal untuk jenis turnamen.
+    public const PLAY_MODE_DOUBLES = 'doubles';
+    public const PLAY_MODE_SINGLES = 'singles';
+
+    public const PLAY_MODES = [
+        self::PLAY_MODE_DOUBLES,
+        self::PLAY_MODE_SINGLES,
+    ];
+
+    protected $fillable = ['name', 'code', 'status', 'original_status', 'games_to_win', 'max_participants', 'use_groups', 'group_count', 'group_names', 'is_public', 'play_mode'];
 
     protected $attributes = [
         'status' => 'draft',
         'games_to_win' => 2,
         'use_groups' => false,
         'is_public' => true,
+        'play_mode' => self::PLAY_MODE_DOUBLES,
     ];
 
     protected function casts(): array
@@ -40,7 +50,14 @@ class Tournament extends Model
             'group_count' => 'integer',
             'group_names' => 'array',
             'is_public' => 'boolean',
+            'play_mode' => 'string',
         ];
+    }
+
+    /** Label bahasa Indonesia untuk mode bermain. */
+    public function playModeLabel(): string
+    {
+        return $this->play_mode === self::PLAY_MODE_SINGLES ? 'Tunggal' : 'Ganda';
     }
 
     protected static function booted(): void

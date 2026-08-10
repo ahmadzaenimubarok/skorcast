@@ -127,7 +127,11 @@ class TournamentShow extends Component
         $groupsActive = $this->tournament->use_groups;
         $label = 'acak';
 
-        if ($mode === 'byGroup' && $groupsActive) {
+        if ($this->tournament->play_mode === Tournament::PLAY_MODE_SINGLES) {
+            // Single: 1 pemain = 1 tim, flow singkat tanpa pasangan.
+            $this->generateSinglesTeams($participants, $mode === 'byGroup');
+            $label = $mode === 'byGroup' ? 'per kelompok' : 'acak';
+        } elseif ($mode === 'byGroup' && $groupsActive) {
             // Real: kelompok = tim
             $this->generateTeamsFromGroups($participants);
             $label = 'per kelompok';
@@ -162,6 +166,19 @@ class TournamentShow extends Component
             }
 
             $teamNumber++;
+        }
+    }
+
+    /** Single: 1 pemain = 1 tim, nama tim = nama pemain. */
+    private function generateSinglesTeams(Collection $participants, bool $byGroup = false): void
+    {
+        foreach ($participants as $participant) {
+            $team = $this->tournament->teams()->create([
+                'name' => $participant->name,
+                'group_name' => $byGroup ? ($participant->group_name ?: 'Tanpa Kelompok') : null,
+            ]);
+
+            $team->members()->attach($participant->id);
         }
     }
 
@@ -467,6 +484,27 @@ class TournamentShow extends Component
         );
     }
 
+    /** Set jenis turnamen: doubles (ganda) atau singles (tunggal). */
+    public function setPlayMode(string $mode): void
+    {
+        if (! in_array($mode, Tournament::PLAY_MODES, true)) {
+            return;
+        }
+
+        if (! $this->ensureStatus('Jenis turnamen hanya bisa diubah saat status draft.', Tournament::STATUS_DRAFT)) {
+            return;
+        }
+
+        if ($this->tournament->play_mode === $mode) {
+            return;
+        }
+
+        $this->tournament->update(['play_mode' => $mode]);
+        $this->tournament->refresh();
+
+        session()->flash('message', 'Jenis turnamen diubah ke ' . $this->tournament->playModeLabel() . '. Generate ulang tim bila sudah ada.');
+    }
+
     public function startMatch($matchId)
     {
         if (! $this->ensureStatus('Mulai turnamen terlebih dahulu.', Tournament::STATUS_ONGOING)) {
@@ -636,7 +674,10 @@ class TournamentShow extends Component
     {
         $teamsCount = $this->tournament->teams()->count();
         if ($teamsCount < 2) {
-            $teamsCount = (int) ceil($this->tournament->participants()->count() / 2);
+            $participantsCount = $this->tournament->participants()->count();
+            $teamsCount = $this->tournament->play_mode === Tournament::PLAY_MODE_SINGLES
+                ? $participantsCount
+                : (int) ceil($participantsCount / 2);
         }
 
         $matches = max($teamsCount - 1, 0);

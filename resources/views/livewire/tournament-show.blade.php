@@ -35,6 +35,13 @@
                             <option value="1" {{ $tournament->games_to_win === 1 ? 'selected' : '' }}>1 Game</option>
                         </select>
                     </span>
+                    <span class="text-sm text-gray-500 ml-2">
+                        Jenis:
+                        <select wire:change="setPlayMode($event.target.value)" class="bg-gray-800 text-gray-200 border border-gray-700 rounded px-2 py-0.5 text-xs">
+                            <option value="doubles" {{ $tournament->play_mode === 'doubles' ? 'selected' : '' }}>Ganda</option>
+                            <option value="singles" {{ $tournament->play_mode === 'singles' ? 'selected' : '' }}>Tunggal</option>
+                        </select>
+                    </span>
                 @endif
                 <span class="text-sm text-gray-500 flex items-center gap-2 ml-2">
                     Visibilitas:
@@ -271,19 +278,23 @@
                     @if($tournament->use_groups)
                         <button wire:click="generateTeams('random')" class="h-11 px-5 inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-lg transition-colors text-sm">
                             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
-                            <span>Generate Acak (campur)</span>
+                            <span>{{ $tournament->play_mode === 'singles' ? 'Generate Pemain' : 'Generate Acak (campur)' }}</span>
                         </button>
                         <button wire:click="generateTeams('byGroup')" class="h-11 px-5 inline-flex items-center gap-2 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-700 font-medium rounded-lg transition-colors text-sm">
                             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.83z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
                             <span>Generate Per Kelompok</span>
                         </button>
                         <p class="w-full text-xs text-gray-500">
-                            Acak = campur antar kelompok (fun) · Per Kelompok = pasang 2-2 dalam kelompok, 1 kelompok bisa jadi beberapa tim
+                            @if($tournament->play_mode === 'singles')
+                                1 pemain = 1 entri · Per Kelompok = semua pemain dalam kelompok jadi entri
+                            @else
+                                Acak = campur antar kelompok (fun) · Per Kelompok = pasang 2-2 dalam kelompok, 1 kelompok bisa jadi beberapa tim
+                            @endif
                         </p>
                     @else
                         <button wire:click="generateTeams('random')" class="h-11 px-5 inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-lg transition-colors text-sm">
                             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
-                            <span>Generate Tim (acak)</span>
+                            <span>{{ $tournament->play_mode === 'singles' ? 'Generate Pemain' : 'Generate Tim (acak)' }}</span>
                         </button>
                     @endif
 
@@ -298,7 +309,7 @@
                 <p class="mb-6 text-sm text-gray-500">Minimal 2 peserta untuk generate tim.</p>
             @endif
 
-            @if($tournament->use_groups && $tournament->status === 'draft' && $tournament->participants->count() >= 2)
+            @if($tournament->use_groups && $tournament->status === 'draft' && $tournament->participants->count() >= 2 && $tournament->play_mode !== 'singles')
                 @php
                     // Tim hasil generate acak tidak punya group_name → sembunyikan section manual
                     $randomGenerated = $tournament->teams->isNotEmpty()
@@ -352,7 +363,7 @@
                                     {{ $team->members->pluck('name')->join(' & ') }}
                                 </p>
                             </div>
-                            @if($tournament->status === 'draft' && $team->group_name)
+                            @if($tournament->status === 'draft' && $team->group_name && $tournament->play_mode !== 'singles')
                                 <button wire:click="unpairTeam({{ $team->id }})"
                                         class="shrink-0 w-8 h-8 rounded-full bg-gray-700/70 hover:bg-red-600/60 text-gray-400 hover:text-white transition-colors"
                                         title="Bongkar pasangan">
