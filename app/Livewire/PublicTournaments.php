@@ -6,9 +6,10 @@ use App\Models\Tournament;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-#[Layout('layouts.public', params: [
+#[Layout('layouts.landing', params: [
     'title' => 'Daftar Turnamen — Skor Cast',
     'description' => 'Lihat turnamen badminton komunitas di Skor Cast — belum mulai, berjalan, dan selesai.',
+    'canonical' => 'https://skorcast.online/turnamen',
 ])]
 class PublicTournaments extends Component
 {
