@@ -7,7 +7,7 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-    <meta name="description" content="{{ $description ?? 'Aplikasi skor badminton untuk turnamen komunitas — peserta daftar lewat link, skor masuk dari HP, bracket tersusun dan maju otomatis. Tanpa aplikasi, tanpa akun.' }}">
+    <meta name="description" content="{{ $description ?? 'Aplikasi skor badminton untuk turnamen komunitas — peserta daftar lewat link, skor masuk dari HP, bracket tersusun dan maju otomatis. Cukup buka dari browser, tanpa install.' }}">
     <meta name="robots" content="index, follow, max-image-preview:large">
     <meta name="theme-color" content="#0B0E0C">
     <link rel="canonical" href="{{ $canonical ?? 'https://skorcast.online/' }}">

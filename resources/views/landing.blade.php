@@ -7,7 +7,7 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-    <meta name="description" content="Aplikasi skor badminton untuk turnamen komunitas — peserta daftar lewat link, skor masuk dari HP, bracket tersusun dan maju otomatis. Tanpa aplikasi, tanpa akun.">
+    <meta name="description" content="Aplikasi skor badminton untuk turnamen komunitas — peserta daftar lewat link, skor masuk dari HP, bracket tersusun dan maju otomatis. Cukup buka dari browser, tanpa install.">
     <link rel="canonical" href="https://skorcast.online/">
     <meta name="robots" content="index, follow, max-image-preview:large">
     <meta name="theme-color" content="#0B0E0C">
@@ -17,14 +17,14 @@
     <meta property="og:site_name" content="Skor Cast">
     <meta property="og:locale" content="id_ID">
     <meta property="og:title" content="Skor Cast — Aplikasi Turnamen & Skor Badminton Online">
-    <meta property="og:description" content="Aplikasi skor badminton untuk turnamen komunitas — daftar via link, skor dari HP, bracket otomatis. Tanpa aplikasi, tanpa akun.">
+    <meta property="og:description" content="Aplikasi skor badminton untuk turnamen komunitas — daftar via link, skor dari HP, bracket otomatis. Cukup buka dari browser, tanpa install.">
     <meta property="og:url" content="https://skorcast.online/">
     <meta property="og:image" content="https://skorcast.online/og-image.png">
 
     {{-- Twitter --}}
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Skor Cast — Aplikasi Turnamen & Skor Badminton Online">
-    <meta name="twitter:description" content="Aplikasi skor badminton untuk turnamen komunitas — daftar via link, skor dari HP, bracket otomatis. Tanpa aplikasi, tanpa akun.">
+    <meta name="twitter:description" content="Aplikasi skor badminton untuk turnamen komunitas — daftar via link, skor dari HP, bracket otomatis. Cukup buka dari browser, tanpa install.">
     <meta name="twitter:image" content="https://skorcast.online/og-image.png">
 
     {{-- Structured data --}}
@@ -36,7 +36,7 @@
         "url": "https://skorcast.online/",
         "applicationCategory": "SportsApplication",
         "operatingSystem": "Any",
-        "description": "Aplikasi skor badminton untuk turnamen komunitas — peserta daftar lewat link, skor masuk dari HP, bracket tersusun dan maju otomatis. Tanpa aplikasi, tanpa akun.",
+        "description": "Aplikasi skor badminton untuk turnamen komunitas — peserta daftar lewat link, skor masuk dari HP, bracket tersusun dan maju otomatis. Cukup buka dari browser, tanpa install.",
         "inLanguage": "id",
         "offers": {
             "@type": "Offer",
@@ -71,7 +71,7 @@
                 "name": "Apakah peserta harus install aplikasi?",
                 "acceptedAnswer": {
                     "@@type": "Answer",
-                    "text": "Tidak. Peserta cukup buka link dari HP — daftar, lihat bracket, dan ikuti skor langsung dari browser. Tanpa akun, tanpa install."
+                    "text": "Tidak. Peserta cukup buka link dari HP — daftar, lihat bracket, dan ikuti skor langsung dari browser. Tanpa install aplikasi apa pun."
                 }
             },
             {
@@ -145,7 +145,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
                     <span class="text-[#4ADE80]">skor jalan otomatis.</span>
                 </h1>
                 <p class="mt-6 text-[#9FB0A6] text-base sm:text-lg leading-relaxed max-w-[46ch]">
-                    Skor Cast mengatur turnamen badminton komunitasmu — peserta daftar lewat link, skor masuk dari HP, bracket tersusun dan maju otomatis. Tanpa aplikasi, tanpa akun.
+                    Skor Cast mengatur turnamen badminton komunitasmu — peserta daftar lewat link, skor masuk dari HP, bracket tersusun dan maju otomatis. Cukup buka dari browser.
                 </p>
                 <div class="mt-8 flex flex-col sm:flex-row gap-3">
                     <a href="/admin"
@@ -292,8 +292,8 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
                 <p class="mt-2 text-[#9FB0A6] leading-relaxed">Fullscreen landscape dengan angka raksasa dan kontras tinggi — terlihat dari seberang lapangan.</p>
             </div>
             <div class="border-t border-white/8 pt-6">
-                <h3 class="text-lg font-bold">Tanpa akun, tanpa install</h3>
-                <p class="mt-2 text-[#9FB0A6] leading-relaxed">Tidak ada signup, tidak ada aplikasi. Buka, main, selesai.</p>
+                <h3 class="text-lg font-bold">Langsung main dari browser</h3>
+                <p class="mt-2 text-[#9FB0A6] leading-relaxed">Cukup buka link dari HP. Buka, main, selesai.</p>
             </div>
         </div>
     </section>
@@ -324,7 +324,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
                     <span class="text-[#4ADE80] text-sm group-open:hidden">+</span>
                     <span class="text-[#4ADE80] text-sm hidden group-open:inline">−</span>
                 </summary>
-                <p class="mt-3 text-[#9FB0A6] leading-relaxed text-sm sm:text-base">Tidak. Peserta cukup buka link dari HP — daftar, lihat bracket, dan ikuti skor langsung dari browser. Tanpa akun, tanpa install.</p>
+                <p class="mt-3 text-[#9FB0A6] leading-relaxed text-sm sm:text-base">Tidak. Peserta cukup buka link dari HP — daftar, lihat bracket, dan ikuti skor langsung dari browser. Tanpa install aplikasi apa pun.</p>
             </details>
             <details class="group border border-white/8 rounded-xl bg-[#101412] px-5 py-4">
                 <summary class="cursor-pointer font-semibold text-base sm:text-lg list-none flex items-center justify-between gap-4 [&::-webkit-details-marker]:hidden">
