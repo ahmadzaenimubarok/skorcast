@@ -4,6 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Skor Cast — Aplikasi Turnamen & Skor Badminton Online</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <meta name="description" content="Aplikasi skor badminton untuk turnamen komunitas — peserta daftar lewat link, skor masuk dari HP, bracket tersusun dan maju otomatis. Tanpa aplikasi, tanpa akun.">
     <link rel="canonical" href="https://skorcast.online/">
     <meta name="robots" content="index, follow, max-image-preview:large">
