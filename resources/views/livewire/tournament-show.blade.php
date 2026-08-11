@@ -528,11 +528,11 @@
     @if($showGenerateModal)
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4" wire:key="mode-change-modal">
             <div class="absolute inset-0 bg-black/70" wire:click="$set('showGenerateModal', false)"></div>
-            <div class="relative w-full max-w-md sm:max-w-lg rounded-xl bg-gray-900 border border-gray-700 p-6 shadow-2xl">
-                <h3 class="text-lg font-semibold text-gray-100">
+            <div class="relative w-full max-w-sm rounded-xl bg-gray-900 border border-gray-700 p-6 shadow-2xl">
+                <h3 class="text-lg font-semibold text-gray-100 text-center">
                     Mode diubah ke {{ $tournament->playModeLabel() }}
                 </h3>
-                <p class="mt-2 text-sm text-gray-400">
+                <p class="mt-2 text-sm text-gray-400 text-center">
                     @if($tournament->play_mode === 'singles')
                         Mau langsung generate pemain? Setiap peserta akan jadi 1 entri (1 pemain = 1 tim).
                     @else
@@ -540,13 +540,13 @@
                     @endif
                     Tim & bracket lama akan dihapus.
                 </p>
-                <div class="mt-6 flex flex-col gap-2 sm:flex-row sm:gap-3">
+                <div class="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-center sm:gap-3">
                     <button wire:click="confirmGenerateAfterModeChange"
-                            class="h-12 sm:h-11 sm:flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-lg transition-colors text-sm">
+                            class="h-12 w-full sm:w-auto sm:h-11 sm:px-6 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-lg transition-colors text-sm">
                         {{ $tournament->play_mode === 'singles' ? 'Generate Pemain' : 'Generate Tim' }}
                     </button>
                     <button wire:click="$set('showGenerateModal', false)"
-                            class="h-12 sm:h-11 sm:flex-1 bg-gray-800 hover:bg-gray-700 text-gray-300 font-medium rounded-lg transition-colors text-sm">
+                            class="h-12 w-full sm:w-auto sm:h-11 sm:px-6 bg-gray-800 hover:bg-gray-700 text-gray-300 font-medium rounded-lg transition-colors text-sm">
                         Nanti saja
                     </button>
                 </div>
