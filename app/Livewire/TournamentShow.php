@@ -34,6 +34,9 @@ class TournamentShow extends Component
     // Estimasi waktu
     public int $estimateCourts = 1;
 
+    // Modal konfirmasi ganti mode (tunggal/ganda) → langsung generate
+    public bool $showGenerateModal = false;
+
     #[Url(as: 'tab')]
     public string $tab = 'participants';
 
@@ -145,7 +148,8 @@ class TournamentShow extends Component
         }
 
         $this->tournament->load('teams.members');
-        session()->flash('message', "Tim berhasil digenerate ({$label})!");
+        $noun = $this->tournament->play_mode === Tournament::PLAY_MODE_SINGLES ? 'Pemain' : 'Tim';
+        session()->flash('message', "{$noun} berhasil digenerate ({$label})!");
     }
 
     /** Fun tanpa kelompok: pasangan acak 2 orang. */
@@ -376,17 +380,20 @@ class TournamentShow extends Component
             }
         }
 
-        // Isi tim ke ronde 1
-        for ($i = 0; $i < $totalSlots; $i++) {
-            $matchIndex = (int) floor($i / 2);
-            $slot = ($i % 2) + 1;
-
-            if ($matchIndex < count($matchesByRound[1])) {
-                $match = $matchesByRound[1][$matchIndex];
-                $column = 'team' . $slot . '_id';
-                $match->$column = $teamIds[$i] ?? null;
-                $match->save();
+        // Isi tim ke ronde 1 — distribusi bye agar TIDAK ada void match (dead-end).
+        // Setiap match R1 minimal 1 tim: firstRoundMatches match pertama berisi 2 tim
+        // (pertandingan sungguhan), sisanya 1 tim (bye, auto-advance oleh advanceByes()).
+        $firstRoundByes = $totalSlots - $totalTeams;
+        $firstRoundMatches = (int) ($totalSlots / 2) - $firstRoundByes;
+        $slotCursor = 0;
+        foreach ($matchesByRound[1] as $matchIndex => $match) {
+            $teamsInThisMatch = $matchIndex < $firstRoundMatches ? 2 : 1;
+            for ($s = 1; $s <= $teamsInThisMatch; $s++) {
+                $column = 'team' . $s . '_id';
+                $match->$column = $teamIds[$slotCursor] ?? null;
+                $slotCursor++;
             }
+            $match->save();
         }
 
         // Hubungkan next_match_id
@@ -502,7 +509,19 @@ class TournamentShow extends Component
         $this->tournament->update(['play_mode' => $mode]);
         $this->tournament->refresh();
 
-        session()->flash('message', 'Jenis turnamen diubah ke ' . $this->tournament->playModeLabel() . '. Generate ulang tim bila sudah ada.');
+        // Langsung tawarkan generate tim/pemain untuk mode baru via modal.
+        $this->showGenerateModal = true;
+    }
+
+    /** Dari modal konfirmasi ganti mode: generate tim/pemain untuk mode baru. */
+    public function confirmGenerateAfterModeChange(): void
+    {
+        $this->showGenerateModal = false;
+
+        $this->generateTeams('random');
+
+        // Pindah ke tab Tim biar hasilnya langsung terlihat.
+        $this->tab = 'teams';
     }
 
     public function startMatch($matchId)
