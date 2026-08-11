@@ -297,13 +297,6 @@
                             <span>{{ $tournament->play_mode === 'singles' ? 'Generate Pemain' : 'Generate Tim (acak)' }}</span>
                         </button>
                     @endif
-
-                    @if(($tournament->teams->count() > 0 || $tournament->gameMatches->count() > 0) && $tournament->status === 'draft')
-                        <button wire:click="generateBracket" class="h-11 px-5 inline-flex items-center gap-2 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-700 font-medium rounded-lg transition-colors text-sm">
-                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 010-5H6"/><path d="M18 9h1.5a2.5 2.5 0 000-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0012 0V2z"/></svg>
-                            <span>Generate Bracket</span>
-                        </button>
-                    @endif
                 </div>
             @elseif($tournament->participants->count() < 2)
                 <p class="mb-6 text-sm text-gray-500">Minimal 2 peserta untuk generate tim.</p>
@@ -382,10 +375,28 @@
     {{-- Tab: Bracket --}}
     @if($tab === 'bracket')
         <div>
+            @if($tournament->status === 'draft' && $tournament->teams->count() >= 2)
+                <div class="mb-6 flex flex-wrap items-center gap-3">
+                    <button wire:click="generateBracket" class="h-11 px-5 inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-lg transition-colors text-sm">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 010-5H6"/><path d="M18 9h1.5a2.5 2.5 0 000-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0012 0V2z"/></svg>
+                        <span>Generate Bracket</span>
+                    </button>
+                    @if($tournament->gameMatches->count() > 0)
+                        <p class="text-xs text-gray-500">
+                            Generate ulang = susun ulang bracket (hasil pertandingan lama dihapus).
+                        </p>
+                    @endif
+                </div>
+            @endif
+
             @if($tournament->gameMatches->count() === 0)
                 <div class="text-center py-12 text-gray-500">
                     <p class="text-4xl mb-3">🏸</p>
-                    <p>Generate tim & bracket terlebih dahulu.</p>
+                    @if($tournament->teams->count() >= 2 && $tournament->status === 'draft')
+                        <p>Bracket belum dibuat. Klik <span class="text-emerald-400">Generate Bracket</span> di atas.</p>
+                    @else
+                        <p>Generate tim & bracket terlebih dahulu.</p>
+                    @endif
                 </div>
             @else
                 {{-- Bracket Display (connector layout) --}}
@@ -510,6 +521,36 @@
                     </div>
                 </div>
             @endif
+        </div>
+    @endif
+
+    {{-- Modal konfirmasi: mode diubah → langsung generate tim/pemain --}}
+    @if($showGenerateModal)
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4" wire:key="mode-change-modal">
+            <div class="absolute inset-0 bg-black/70" wire:click="$set('showGenerateModal', false)"></div>
+            <div class="relative w-full max-w-md sm:max-w-lg rounded-xl bg-gray-900 border border-gray-700 p-6 shadow-2xl">
+                <h3 class="text-lg font-semibold text-gray-100">
+                    Mode diubah ke {{ $tournament->playModeLabel() }}
+                </h3>
+                <p class="mt-2 text-sm text-gray-400">
+                    @if($tournament->play_mode === 'singles')
+                        Mau langsung generate pemain? Setiap peserta akan jadi 1 entri (1 pemain = 1 tim).
+                    @else
+                        Mau langsung generate tim? Peserta akan dipasangkan secara acak.
+                    @endif
+                    Tim & bracket lama akan dihapus.
+                </p>
+                <div class="mt-6 flex flex-col gap-2 sm:flex-row sm:gap-3">
+                    <button wire:click="confirmGenerateAfterModeChange"
+                            class="h-12 sm:h-11 sm:flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-lg transition-colors text-sm">
+                        {{ $tournament->play_mode === 'singles' ? 'Generate Pemain' : 'Generate Tim' }}
+                    </button>
+                    <button wire:click="$set('showGenerateModal', false)"
+                            class="h-12 sm:h-11 sm:flex-1 bg-gray-800 hover:bg-gray-700 text-gray-300 font-medium rounded-lg transition-colors text-sm">
+                        Nanti saja
+                    </button>
+                </div>
+            </div>
         </div>
     @endif
 </div>
