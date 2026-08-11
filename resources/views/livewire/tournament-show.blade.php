@@ -46,12 +46,12 @@
                 <span class="text-sm text-gray-500 flex items-center gap-2 ml-2">
                     Visibilitas:
                     <button type="button" wire:click="toggleVisibility"
-                            class="relative inline-flex items-center h-6 w-11 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500/50
-                                {{ $tournament->is_public ? 'bg-emerald-600' : 'bg-gray-600' }}"
+                            class="relative inline-flex items-center h-7 w-12 shrink-0 rounded-full transition-colors duration-200 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/60
+                                {{ $tournament->is_public ? 'bg-emerald-600 hover:bg-emerald-500' : 'bg-gray-600 hover:bg-gray-500' }}"
                             role="switch" aria-checked="{{ $tournament->is_public ? 'true' : 'false' }}"
                             :title="'{{ $tournament->is_public ? 'Klik untuk privat' : 'Klik untuk publik' }}'">
-                        <span class="inline-block w-4 h-4 transform rounded-full bg-white transition-transform
-                            {{ $tournament->is_public ? 'translate-x-[1.4rem]' : 'translate-x-1' }}"></span>
+                        <span class="inline-block w-5 h-5 rounded-full bg-white shadow transition-transform duration-200 ease-in-out
+                            {{ $tournament->is_public ? 'translate-x-6' : 'translate-x-1' }}"></span>
                     </button>
                     <span class="text-xs font-medium {{ $tournament->is_public ? 'text-emerald-400' : 'text-gray-400' }}">
                         {{ $tournament->is_public ? 'Publik' : 'Privat' }}
