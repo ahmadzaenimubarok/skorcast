@@ -469,6 +469,14 @@
                                                 <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                                                 Scoreboard
                                             </a>
+                                            @if($match->control_session_id)
+                                                <button wire:click="forceReleaseControl({{ $match->id }})"
+                                                        wire:confirm="Lepaskan kendali scoreboard dari device yang sedang mengoperasikannya?"
+                                                        class="mt-2 w-full h-10 flex items-center justify-center gap-1.5 text-xs font-medium bg-red-900/40 hover:bg-red-800/50 text-red-300 border border-red-800 rounded-lg transition-colors">
+                                                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                                                    Lepas Kendali
+                                                </button>
+                                            @endif
                                         @endif
 
                                         @if($match->status === 'completed' && $match->winner)

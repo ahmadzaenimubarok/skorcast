@@ -13,5 +13,6 @@
 <body class="font-sans antialiased overflow-hidden bg-gray-950">
     {{ $slot }}
     @livewireScripts
+    @stack('scripts')
 </body>
 </html>

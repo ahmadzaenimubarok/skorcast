@@ -53,7 +53,28 @@
           }
      @endif
       }"
-     wire:poll.2000ms="$refresh">
+     wire:poll.2000ms="$refresh"
+     @if(!$readonly && $controlActive)
+     x-init="setInterval(() => { if ($wire) $wire.heartbeat(); }, 5000)"
+     @endif
+     >
+
+    {{-- Overlay: scoreboard ini dikunci device lain (admin control) --}}
+    @if(!$readonly && $lockedByOther)
+    <div class="fixed inset-0 z-50 bg-black/85 flex flex-col items-center justify-center p-8 text-center"
+         wire:poll.2000ms="$refresh">
+        <div class="text-6xl mb-4">🔒</div>
+        <h2 class="text-xl sm:text-2xl font-bold text-white mb-2">Scoreboard sedang dikendalikan</h2>
+        <p class="text-gray-400 text-sm max-w-sm">
+            Device lain sedang mengoperasikan scoreboard ini.<br>
+            Buka dari device yang sama untuk mengubah skor.
+        </p>
+        <a href="/admin/tournaments/{{ $match->tournament_id }}"
+           class="mt-6 px-6 h-12 inline-flex items-center justify-center bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-lg transition-colors">
+            ← Kembali ke Turnamen
+        </a>
+    </div>
+    @endif
 
     {{-- ============================================================ --}}
     {{-- PANEL ATAS: Black — info, game status, games won            --}}

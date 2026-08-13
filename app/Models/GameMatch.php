@@ -30,7 +30,76 @@ class GameMatch extends Model
             'status' => 'string',
             'started_at' => 'datetime',
             'finished_at' => 'datetime',
+            'control_heartbeat' => 'datetime',
         ];
+    }
+
+    /**
+     * Waktu (detik) tanpa heartbeat sebelum lock otomatis lepas.
+     * Device keluar halaman → heartbeat berhenti → lepas otomatis setelah ini.
+     */
+    public const CONTROL_LOCK_TIMEOUT = 30;
+
+    /**
+     * Apakah match ini sedang dikunci oleh device lain (bukan session saat ini)?
+     */
+    public function isControlLockedByOther(?string $sessionId): bool
+    {
+        if (blank($this->control_session_id)) return false;
+        if (blank($sessionId)) return true; // belum punya session → dianggap device lain
+        if ($this->control_session_id === $sessionId) return false;
+
+        // Punya session tapi lock sudah expired → bebas
+        return ! $this->isControlExpired();
+    }
+
+    /**
+     * Apakah lock sudah kedaluwarsa (lewat timeout)?
+     */
+    public function isControlExpired(): bool
+    {
+        if (blank($this->control_heartbeat)) return true;
+        return $this->control_heartbeat->copy()
+            ->addSeconds(self::CONTROL_LOCK_TIMEOUT)
+            ->isPast();
+    }
+
+    /**
+     * Klaim / perbarui lock untuk session ini.
+     * Mengembalikan true kalau berhasil (bebas atau sudah milik session ini),
+     * false kalau dipegang device lain yang masih aktif.
+     */
+    public function acquireControl(string $sessionId): bool
+    {
+        // Sudah dibatalkan / milik session sendiri → perbarui heartbeat
+        if (blank($this->control_session_id) || $this->control_session_id === $sessionId) {
+            $this->control_session_id = $sessionId;
+            $this->control_heartbeat = now();
+            $this->save();
+            return true;
+        }
+
+        // Dipegang device lain → cek expiry
+        if ($this->isControlExpired()) {
+            $this->control_session_id = $sessionId;
+            $this->control_heartbeat = now();
+            $this->save();
+            return true;
+        }
+
+        return false; // masih dipegang device lain yang aktif
+    }
+
+    /**
+     * Lepas lock (jika milik session ini, atau force-release oleh admin).
+     */
+    public function releaseControl(?string $sessionId = null, bool $force = false): void
+    {
+        if ($force || blank($sessionId) || $this->control_session_id === $sessionId) {
+            $this->control_session_id = null;
+            $this->control_heartbeat = null;
+            $this->save();
+        }
     }
 
     /**

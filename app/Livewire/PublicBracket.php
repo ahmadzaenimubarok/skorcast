@@ -54,7 +54,7 @@ class PublicBracket extends Component
 
         return view('livewire.public-bracket', [
             'bracketRounds' => $bracketRounds,
-            'bracketLayout' => $this->bracketLayout($this->tournament->gameMatches),
+            'bracketLayout' => $this->bracketLayout($this->tournament->gameMatches, cardH: 200, cardW: 256),
             'champion' => $champion,
         ]);
     }

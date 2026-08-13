@@ -37,7 +37,7 @@
                 {{-- Round headers --}}
                 @foreach ($bracketLayout['rounds'] as $round => $matches)
                     <div class="absolute top-0 flex items-center justify-center"
-                         style="left: {{ $bracketLayout['roundLeft'][$round] }}px; width: 224px; height: {{ $bracketLayout['headerH'] }}px;">
+                         style="left: {{ $bracketLayout['roundLeft'][$round] }}px; width: 256px; height: {{ $bracketLayout['headerH'] }}px;">
                         <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider text-center">
                             {{ $bracketLayout['roundNames'][$round] ?? ('Ronde ' . $round) }}
                             @if($loop->last)<span class="text-emerald-500 ml-1">🏆</span>@endif
@@ -49,56 +49,97 @@
                 @foreach ($bracketLayout['rounds'] as $round => $matches)
                     <div class="absolute top-0" style="left: {{ $bracketLayout['roundLeft'][$round] }}px;">
                         @foreach ($matches as $match)
-                            <div class="absolute w-56 flex flex-col justify-center p-3 bg-gray-900 border rounded-lg
-                                        {{ $match->status === 'ongoing' ? 'border-amber-700' : ($match->status === 'completed' ? 'border-emerald-900' : 'border-gray-800') }}"
+                            <div class="absolute w-64 flex flex-col bg-gray-900 border rounded-xl overflow-hidden
+                                        {{ $match->status === 'ongoing' ? 'border-amber-600/70' : ($match->status === 'completed' ? 'border-emerald-800/70' : 'border-gray-800') }} shadow-[0_1px_0_0_rgba(255,255,255,0.04)]"
                                  style="top: {{ $bracketLayout['tops'][$match->id] }}px; height: {{ $bracketLayout['cardH'] }}px;">
-                                {{-- Team 1 --}}
-                                <div class="flex items-center justify-between {{ $match->isTeam1Winner() ? 'text-emerald-400 font-semibold' : ($match->team1 ? 'text-gray-300' : 'text-gray-700') }}">
-                                    <span class="text-sm truncate min-w-0 flex-1">
-                                        @if($match->team1)
-                                            {{ $match->team1->name }}
-                                            @if($match->team1->members->isNotEmpty())
-                                                <span class="text-xs text-gray-500 ml-1">({{ $match->team1->membersList() }})</span>
+
+                                {{-- Team 1: nama+peserta kiri, kotak skor kanan --}}
+                                <div class="flex items-start gap-2 px-3 pt-2 {{ $match->isTeam1Winner() ? 'text-emerald-300' : ($match->team1 ? ($match->status === 'completed' ? 'text-gray-500' : 'text-gray-200') : 'text-gray-600') }}">
+                                    <div class="min-w-0 flex-1">
+                                        <div class="text-sm font-semibold truncate">
+                                            @if($match->team1)
+                                                {{ $match->team1->name }}
+                                            @elseif($match->isBye())
+                                                <span class="text-yellow-600">BYE</span>
+                                            @else
+                                                —
                                             @endif
-                                        @elseif($match->isBye())
-                                            <span class="text-yellow-700">BYE</span>
-                                        @else
-                                            —
+                                        </div>
+                                        @if($match->team1 && $match->team1->members->isNotEmpty())
+                                            <div class="text-[11px] font-normal text-gray-500 truncate">{{ $match->team1->membersList() }}</div>
                                         @endif
-                                    </span>
-                                    <span class="text-sm font-mono ml-2 flex-none">{{ $match->status !== 'pending' ? $match->score1 : '' }}</span>
+                                    </div>
+                                    @if(!$match->isBye())
+                                        @php $totalGames = $tournament->games_to_win === 1 ? 1 : ($tournament->games_to_win * 2 - 1); @endphp
+                                        <div class="flex-none flex items-center gap-1">
+                                            @for($gi = 0; $gi < $totalGames; $gi++)
+                                                @php
+                                                    $g = ($match->games_detail[$gi] ?? ['t1' => 0, 't2' => 0]);
+                                                    $gt1 = $g['t1'] ?? 0; $gt2 = $g['t2'] ?? 0;
+                                                    $gw = $match->gameWinner($gt1, $gt2);
+                                                @endphp
+                                                <span class="inline-flex flex-col items-center justify-center rounded-md min-w-[2.25rem] py-0.5
+                                                             {{ $gw === 1 ? 'bg-emerald-500/20 text-emerald-300' : 'bg-gray-800 text-gray-400' }}">
+                                                    <span class="text-[9px] leading-none text-gray-500 mb-0.5">G{{ $gi + 1 }}</span>
+                                                    <span class="text-xs font-mono tabular-nums font-semibold">{{ $gt1 }}</span>
+                                                </span>
+                                            @endfor
+                                        </div>
+                                    @endif
                                 </div>
-                                {{-- VS --}}
-                                <div class="text-xs text-gray-700 my-1 text-center">VS</div>
+
+                                <div class="h-px bg-gray-800"></div>
+
                                 {{-- Team 2 --}}
-                                <div class="flex items-center justify-between {{ $match->isTeam2Winner() ? 'text-emerald-400 font-semibold' : ($match->team2 ? 'text-gray-300' : 'text-gray-700') }}">
-                                    <span class="text-sm truncate min-w-0 flex-1">
-                                        @if($match->team2)
-                                            {{ $match->team2->name }}
-                                            @if($match->team2->members->isNotEmpty())
-                                                <span class="text-xs text-gray-500 ml-1">({{ $match->team2->membersList() }})</span>
+                                <div class="flex items-start gap-2 px-3 pt-2 {{ $match->isTeam2Winner() ? 'text-emerald-300' : ($match->team2 ? ($match->status === 'completed' ? 'text-gray-500' : 'text-gray-200') : 'text-gray-600') }}">
+                                    <div class="min-w-0 flex-1">
+                                        <div class="text-sm font-semibold truncate">
+                                            @if($match->team2)
+                                                {{ $match->team2->name }}
+                                            @elseif($match->isBye())
+                                                <span class="text-yellow-600">BYE</span>
+                                            @else
+                                                —
                                             @endif
-                                        @elseif($match->isBye())
-                                            <span class="text-yellow-700">BYE</span>
-                                        @else
-                                            —
+                                        </div>
+                                        @if($match->team2 && $match->team2->members->isNotEmpty())
+                                            <div class="text-[11px] font-normal text-gray-500 truncate">{{ $match->team2->membersList() }}</div>
                                         @endif
-                                    </span>
-                                    <span class="text-sm font-mono ml-2 flex-none">{{ $match->status !== 'pending' ? $match->score2 : '' }}</span>
+                                    </div>
+                                    @if(!$match->isBye())
+                                        @php $totalGames = $tournament->games_to_win === 1 ? 1 : ($tournament->games_to_win * 2 - 1); @endphp
+                                        <div class="flex-none flex items-center gap-1">
+                                            @for($gi = 0; $gi < $totalGames; $gi++)
+                                                @php
+                                                    $g = ($match->games_detail[$gi] ?? ['t1' => 0, 't2' => 0]);
+                                                    $gt1 = $g['t1'] ?? 0; $gt2 = $g['t2'] ?? 0;
+                                                    $gw = $match->gameWinner($gt1, $gt2);
+                                                @endphp
+                                                <span class="inline-flex flex-col items-center justify-center rounded-md min-w-[2.25rem] py-0.5
+                                                             {{ $gw === 2 ? 'bg-emerald-500/20 text-emerald-300' : 'bg-gray-800 text-gray-400' }}">
+                                                    <span class="text-[9px] leading-none text-gray-500 mb-0.5">G{{ $gi + 1 }}</span>
+                                                    <span class="text-xs font-mono tabular-nums font-semibold">{{ $gt2 }}</span>
+                                                </span>
+                                            @endfor
+                                        </div>
+                                    @endif
                                 </div>
+
+                                {{-- Footer --}}
                                 @if($match->status === 'ongoing')
                                     <a href="{{ route('public.scoreboard', ['code' => $tournament->code, 'gameMatch' => $match->id]) }}"
-                                       class="block mt-2 w-full h-10 flex items-center justify-center gap-1.5 text-sm font-medium bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-700/60 rounded-lg transition-colors">
-                                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                                       class="mt-auto block w-full h-9 flex items-center justify-center gap-1.5 text-xs font-semibold bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border-t border-emerald-700/40 transition-colors">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-300 polling-indicator"></span>
+                                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                                         Scoreboard
                                     </a>
-                                @endif
-                                @if($match->status === 'completed' && $match->winner)
-                                    <div class="mt-1.5 text-xs {{ $match->isBye() ? 'text-yellow-700' : 'text-emerald-600' }} text-center">
+                                @elseif($match->status === 'completed' && $match->winner)
+                                    <div class="mt-auto h-9 flex items-center justify-center gap-1.5 text-xs font-medium border-t border-gray-800 {{ $match->isBye() ? 'text-yellow-500' : 'text-emerald-400' }}">
                                         @if($match->isBye())
                                             ↪ {{ $match->winner->name }} (BYE)
                                         @else
-                                            ✓ {{ $match->winner->name }}
+                                            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                            {{ $match->winner->name }}
                                         @endif
                                     </div>
                                 @endif

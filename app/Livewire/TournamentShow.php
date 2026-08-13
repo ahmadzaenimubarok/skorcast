@@ -53,7 +53,18 @@ class TournamentShow extends Component
             return;
         }
 
+        $this->participantName = trim($this->participantName);
         $this->validate(['participantName' => 'required|string|max:255']);
+
+        // Nama peserta harus unik (case-insensitive) dalam turnamen yang sama
+        $exists = $this->tournament->participants()
+            ->whereRaw('LOWER(name) = ?', [mb_strtolower($this->participantName)])
+            ->exists();
+
+        if ($exists) {
+            session()->flash('error', 'Nama "' . $this->participantName . '" sudah terdaftar.');
+            return;
+        }
 
         // Kuota total maksimal peserta
         $max = $this->tournament->max_participants;
@@ -543,6 +554,19 @@ class TournamentShow extends Component
         $this->tournament->load('gameMatches.team1', 'gameMatches.team2', 'gameMatches.winner');
     }
 
+    /**
+     * Admin melepas paksa lock device yang mengendalikan scoreboard match ini.
+     * Device aktif akan otomatis redirect ke detail turnamen (via heartbeat).
+     * Semua admin berhak memanggil ini.
+     */
+    public function forceReleaseControl($matchId)
+    {
+        $match = $this->tournament->gameMatches()->findOrFail($matchId);
+        $match->releaseControl(force: true);
+        $this->tournament->load('gameMatches.team1', 'gameMatches.team2', 'gameMatches.winner');
+        session()->flash('message', 'Kendali scoreboard dilepas — device lain dapat mengambil alih.');
+    }
+
     public function editScore($matchId)
     {
         $match = $this->tournament->gameMatches()->findOrFail($matchId);
@@ -771,7 +795,7 @@ class TournamentShow extends Component
 
         return view('livewire.tournament-show', [
             'bracketRounds' => $bracketRounds,
-            'bracketLayout' => $this->tab === 'bracket' ? $this->bracketLayout($this->tournament->gameMatches, cardH: 160) : [],
+            'bracketLayout' => $this->tab === 'bracket' ? $this->bracketLayout($this->tournament->gameMatches, cardH: 184) : [],
             'champion' => $champion,
             'estimate' => $this->estimateSummary(),
         ]);

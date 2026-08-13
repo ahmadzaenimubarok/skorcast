@@ -25,7 +25,7 @@ trait ComputesBracketLayout
      * @param \Illuminate\Support\Collection $matches gameMatches ordered by round, match_number
      * @return array
      */
-    private function bracketLayout($matches, int $cardH = 132, int $cardW = 224, int $vGap = 16, int $hGap = 64, int $headerH = 40): array
+    private function bracketLayout($matches, int $cardH = 184, int $cardW = 224, int $vGap = 16, int $hGap = 64, int $headerH = 40): array
     {
         $byRound = [];
         foreach ($matches as $m) {

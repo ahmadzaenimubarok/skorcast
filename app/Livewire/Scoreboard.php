@@ -22,6 +22,12 @@ class Scoreboard extends Component
     public string $tournamentName = '';
     public int $gamesToWin = 2;
 
+    // --- Device control lock (admin only) ---
+    public bool $lockedByOther = false;   // true kalau scoreboard ini dikunci device lain
+    public bool $controlActive = false;   // true kalau device ini pemegang lock
+    public ?string $lockOwnerLabel = null; // untuk pesan peringatan
+    private ?string $sessionId = null;
+
     public function mount(GameMatch $gameMatch)
     {
         $this->match = $gameMatch->load(['team1.members', 'team2.members', 'tournament']);
@@ -31,7 +37,7 @@ class Scoreboard extends Component
         $this->tournamentName = $this->match->tournament?->name ?? 'Badminton Fun Match';
         $this->gamesToWin = $this->match->tournament?->games_to_win ?? 2;
 
-        // Public scoreboard route → read-only
+        // Public scoreboard route → read-only (lock TIDAK berlaku di publik)
         if (request()->route()->named('public.scoreboard')) {
             $this->readonly = true;
         }
@@ -40,12 +46,70 @@ class Scoreboard extends Component
             $this->match->initGames();
         }
 
+        // Lock hanya untuk kontrol admin (route scoreboard.show, bukan publik)
+        if (!$this->readonly) {
+            $this->sessionId = session()->getId();
+            $this->initControlLock();
+        }
+
         $this->refreshState();
+    }
+
+    /**
+     * Cek / klaim lock saat mount. Set flag lockedByOther kalau dipegang device lain.
+     */
+    private function initControlLock(): void
+    {
+        if ($this->match->isControlLockedByOther($this->sessionId)) {
+            $this->lockedByOther = true;
+            $this->controlActive = false;
+        } else {
+            $this->match->acquireControl($this->sessionId);
+            $this->lockedByOther = false;
+            $this->controlActive = true;
+        }
+    }
+
+    /**
+     * Dipanggil lewat Alpine Poll tiap 5 detik: perbarui heartbeat + cek apakah
+     * lock masih milik device ini. Kalau admin melepas paksa → redirect ke detail turnamen.
+     */
+    public function heartbeat(): void
+    {
+        if ($this->readonly) return;
+
+        // Baca state DB terbaru (snapshot bisa stale setelah admin force-release)
+        $this->match->refresh();
+
+        // Lock masih milik device ini → perbarui heartbeat, tetap kontrol
+        if ($this->match->control_session_id === $this->sessionId) {
+            $this->match->control_heartbeat = now();
+            $this->match->save();
+            $this->lockedByOther = false;
+            $this->controlActive = true;
+            return;
+        }
+
+        // Lock sudah dilepas/dialihkan → redirect ke detail turnamen
+        $this->redirect('/admin/tournaments/' . $this->match->tournament_id);
     }
 
     public function refreshState(): void
     {
         $this->match->refresh();
+
+        // Sinkron status lock (dipanggil tiap poll $refresh):
+        // kalau device ini pemegang → pastikan masih aktif; kalau bukan → kunci.
+        if (!$this->readonly) {
+            if ($this->match->control_session_id === $this->sessionId) {
+                $this->lockedByOther = false;
+                $this->controlActive = true;
+            } else {
+                $this->lockedByOther = true;
+                $this->controlActive = false;
+            }
+        }
+
         $this->currentGame = $this->match->currentGameIndex();
         [$s1, $s2] = $this->match->currentScores();
         $this->scores = [$s1, $s2];
@@ -88,6 +152,7 @@ class Scoreboard extends Component
     public function increment(int $team): void
     {
         if ($this->readonly) return;
+        if ($this->lockedByOther) return;          // dikunci device lain → blokir
         if ($this->match->status !== 'ongoing') return;
         if ($this->matchOver) return;
         if ($this->showSwitchCourt) return;
@@ -142,6 +207,7 @@ class Scoreboard extends Component
     public function decrement(int $team): void
     {
         if ($this->readonly) return;
+        if ($this->lockedByOther) return;          // dikunci device lain → blokir
         if ($this->match->status !== 'ongoing') return;
         if ($this->matchOver) return;
         if ($this->showSwitchCourt) return;
@@ -169,6 +235,11 @@ class Scoreboard extends Component
         $this->match->load('tournament');
         $code = $this->match->tournament?->code;
         $tournamentId = $this->match->tournament_id;
+
+        // Operator keluar scoreboard → lepas lock agar device lain bisa mengambil alih
+        if (!$this->readonly && $this->sessionId) {
+            $this->match->releaseControl($this->sessionId);
+        }
 
         if ($this->readonly && $code) {
             $this->redirect('/t/' . $code);
@@ -206,6 +277,7 @@ class Scoreboard extends Component
     public function confirmSwitchCourt(): void
     {
         if ($this->readonly) return;
+        if ($this->lockedByOther) return;          // dikunci device lain → blokir
         $detail = $this->match->games_detail;
         $detail[] = ['t1' => 0, 't2' => 0];
         $this->match->games_detail = $detail;
