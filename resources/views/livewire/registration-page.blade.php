@@ -1,4 +1,4 @@
-<div>
+<div wire:poll.4s="refresh">
     {{-- Header Card --}}
     <div class="bg-gray-900 rounded-2xl border border-gray-800 p-6 text-center">
         <div class="text-4xl mb-2">🏸</div>

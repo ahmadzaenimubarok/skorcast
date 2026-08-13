@@ -28,6 +28,19 @@ class Scoreboard extends Component
     public ?string $lockOwnerLabel = null; // untuk pesan peringatan
     private ?string $sessionId = null;
 
+    /**
+     * Lifecycle: setiap request Livewire (klik/poll) me-rehydrate komponen.
+     * $sessionId bersifat private → TIDAK ikut tersimpan di snapshot, sehingga
+     * harus di-set ulang di sini. Tanpa ini, sessionId jadi null setelah request
+     * kedua dan refreshState() salah menganggap scoreboard dikunci device lain.
+     */
+    public function hydrate(): void
+    {
+        if (!$this->readonly) {
+            $this->sessionId = session()->getId();
+        }
+    }
+
     public function mount(GameMatch $gameMatch)
     {
         $this->match = $gameMatch->load(['team1.members', 'team2.members', 'tournament']);

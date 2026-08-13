@@ -80,6 +80,14 @@ class RegistrationPage extends Component
         session()->flash('message', 'Pendaftaran berhasil! Nama kamu sudah masuk daftar.');
     }
 
+    // Dipanggil via wire:poll agar daftar + jumlah peserta sinkron di semua device
+    public function refresh()
+    {
+        $this->tournament = Tournament::where('code', $this->code)
+            ->with('participants')
+            ->firstOrFail();
+    }
+
     public function render()
     {
         return view('livewire.registration-page');

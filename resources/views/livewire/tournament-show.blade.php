@@ -273,14 +273,25 @@
     {{-- Tab: Teams --}}
     @if($tab === 'teams')
         <div>
+            @php
+                $genCount = $tournament->participants->count();
+                $genDoubles = $tournament->play_mode !== 'singles';
+            @endphp
             @if($tournament->participants->count() >= 2 && $tournament->status === 'draft')
-                <div class="mb-6 flex flex-wrap items-center gap-3">
+                <div class="mb-6 flex flex-wrap items-center gap-3"
+                     x-data="{ pendingMode: null, oddWarning: false }">
                     @if($tournament->use_groups)
-                        <button wire:click="generateTeams('random')" class="h-11 px-5 inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-lg transition-colors text-sm">
+                        <button @click="
+                            if ({{ $genDoubles ? 'true' : 'false' }} && {{ $genCount }} % 2 !== 0) { pendingMode = 'random'; oddWarning = true; }
+                            else { $wire.generateTeams('random'); }
+                        " class="h-11 px-5 inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-lg transition-colors text-sm">
                             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
                             <span>{{ $tournament->play_mode === 'singles' ? 'Generate Pemain' : 'Generate Acak (campur)' }}</span>
                         </button>
-                        <button wire:click="generateTeams('byGroup')" class="h-11 px-5 inline-flex items-center gap-2 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-700 font-medium rounded-lg transition-colors text-sm">
+                        <button @click="
+                            if ({{ $genDoubles ? 'true' : 'false' }} && {{ $genCount }} % 2 !== 0) { pendingMode = 'byGroup'; oddWarning = true; }
+                            else { $wire.generateTeams('byGroup'); }
+                        " class="h-11 px-5 inline-flex items-center gap-2 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-700 font-medium rounded-lg transition-colors text-sm">
                             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.83z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
                             <span>Generate Per Kelompok</span>
                         </button>
@@ -292,13 +303,40 @@
                             @endif
                         </p>
                     @else
-                        <button wire:click="generateTeams('random')" class="h-11 px-5 inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-lg transition-colors text-sm">
+                        <button @click="
+                            if ({{ $genDoubles ? 'true' : 'false' }} && {{ $genCount }} % 2 !== 0) { pendingMode = 'random'; oddWarning = true; }
+                            else { $wire.generateTeams('random'); }
+                        " class="h-11 px-5 inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-lg transition-colors text-sm">
                             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
                             <span>{{ $tournament->play_mode === 'singles' ? 'Generate Pemain' : 'Generate Tim (acak)' }}</span>
                         </button>
                     @endif
+
+                    {{-- Modal warning: peserta ganjil (mode ganda) --}}
+                    <template x-if="oddWarning">
+                        <div class="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4" @click.self="oddWarning = false" wire:ignore>
+                            <div class="w-full max-w-sm rounded-2xl bg-[#1e1e2e] border border-amber-500/40 shadow-2xl p-6 sm:p-8 text-center">
+                                <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-amber-500/15 text-4xl">⚠️</div>
+                                <h2 class="text-xl sm:text-2xl font-bold text-white mb-2">Peserta Ganjil</h2>
+                                <p class="text-gray-400 text-sm mb-6">
+                                    Terdapat <span class="font-semibold text-amber-300">{{ $genCount }}</span> peserta (ganjil).<br>
+                                    Satu peserta akan menjadi sisa tanpa pasangan.
+                                </p>
+                                <div class="flex flex-col sm:flex-row gap-3">
+                                    <button @click="$wire.generateTeams(pendingMode); oddWarning = false"
+                                            class="flex-1 h-12 inline-flex items-center justify-center bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-xl transition-colors">
+                                        Lanjut Generate
+                                    </button>
+                                    <button @click="$wire.set('tab', 'participants'); oddWarning = false"
+                                            class="flex-1 h-12 inline-flex items-center justify-center bg-gray-700 hover:bg-gray-600 text-gray-200 font-medium rounded-xl transition-colors">
+                                        Edit Peserta
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
                 </div>
-            @elseif($tournament->participants->count() < 2)
+            @else
                 <p class="mb-6 text-sm text-gray-500">Minimal 2 peserta untuk generate tim.</p>
             @endif
 
@@ -469,7 +507,7 @@
                                                 <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                                                 Scoreboard
                                             </a>
-                                            @if($match->control_session_id)
+                                            @if($match->control_session_id && ! $match->isControlExpired())
                                                 <button wire:click="forceReleaseControl({{ $match->id }})"
                                                         wire:confirm="Lepaskan kendali scoreboard dari device yang sedang mengoperasikannya?"
                                                         class="mt-2 w-full h-10 flex items-center justify-center gap-1.5 text-xs font-medium bg-red-900/40 hover:bg-red-800/50 text-red-300 border border-red-800 rounded-lg transition-colors">

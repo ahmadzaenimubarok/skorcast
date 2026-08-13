@@ -61,18 +61,20 @@
 
     {{-- Overlay: scoreboard ini dikunci device lain (admin control) --}}
     @if(!$readonly && $lockedByOther)
-    <div class="fixed inset-0 z-50 bg-black/85 flex flex-col items-center justify-center p-8 text-center"
+    <div class="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
          wire:poll.2000ms="$refresh">
-        <div class="text-6xl mb-4">🔒</div>
-        <h2 class="text-xl sm:text-2xl font-bold text-white mb-2">Scoreboard sedang dikendalikan</h2>
-        <p class="text-gray-400 text-sm max-w-sm">
-            Device lain sedang mengoperasikan scoreboard ini.<br>
-            Buka dari device yang sama untuk mengubah skor.
-        </p>
-        <a href="/admin/tournaments/{{ $match->tournament_id }}"
-           class="mt-6 px-6 h-12 inline-flex items-center justify-center bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-lg transition-colors">
-            ← Kembali ke Turnamen
-        </a>
+        <div class="w-full max-w-sm rounded-2xl bg-[#1e1e2e] border border-red-500/40 shadow-2xl p-6 sm:p-8 text-center">
+            <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-500/15 text-4xl">🔒</div>
+            <h2 class="text-xl sm:text-2xl font-bold text-white mb-2">Scoreboard Dikendalikan Device Lain</h2>
+            <p class="text-gray-400 text-sm mb-6">
+                Device lain sedang mengoperasikan scoreboard ini.<br>
+                Buka dari device yang sama untuk mengubah skor.
+            </p>
+            <a href="/admin/tournaments/{{ $match->tournament_id }}"
+               class="block w-full h-12 inline-flex items-center justify-center bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-xl transition-colors">
+                ← Kembali ke Turnamen
+            </a>
+        </div>
     </div>
     @endif
 
@@ -281,19 +283,21 @@
 
         {{-- Switch Court Overlay --}}
         @if($showSwitchCourt)
-        <div class="absolute inset-0 bg-black/70 flex flex-col items-center justify-center rounded-2xl z-20 p-8"
+        <div class="absolute inset-0 z-30 flex items-center justify-center rounded-2xl bg-black/80 p-4"
              wire:click="confirmSwitchCourt"
              style="cursor: pointer">
-            <div class="text-6xl mb-4">🔄</div>
-            <h2 class="text-2xl font-bold text-white mb-2 text-center">Pindah Lapangan</h2>
-            <p class="text-gray-400 text-sm mb-6 text-center">
-                Game {{ $currentGame + 1 }} selesai<br>
-                Ketuk untuk pindah sisi lapangan
-            </p>
-            <button wire:click.stop="confirmSwitchCourt"
-                    class="px-8 py-4 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-400 text-white font-bold text-lg rounded-xl transition-colors active:scale-95">
-                🔄 Pindah Lapangan
-            </button>
+            <div class="w-full max-w-sm rounded-2xl bg-[#1e1e2e] border border-amber-500/40 shadow-2xl p-6 sm:p-8 text-center">
+                <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-amber-500/15 text-4xl">🔄</div>
+                <h2 class="text-2xl font-bold text-white mb-2">Pindah Lapangan</h2>
+                <p class="text-gray-400 text-sm mb-6">
+                    Game {{ $currentGame + 1 }} selesai<br>
+                    Ketuk untuk pindah sisi lapangan
+                </p>
+                <button wire:click="confirmSwitchCourt"
+                        class="w-full h-12 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-400 text-white font-bold text-lg rounded-xl transition-colors active:scale-95">
+                    🔄 Pindah Lapangan
+                </button>
+            </div>
         </div>
         @endif
 
