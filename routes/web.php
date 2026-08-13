@@ -8,6 +8,8 @@ use App\Livewire\RegistrationPage;
 use App\Livewire\Scoreboard;
 use App\Livewire\TournamentIndex;
 use App\Livewire\TournamentShow;
+use App\Livewire\WasitBracket;
+use App\Livewire\WasitDashboard;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -22,10 +24,14 @@ Route::post('/logout', function () {
     return redirect('/login');
 })->middleware('auth');
 
-Route::prefix('admin')->middleware('auth')->group(function () {
+Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::get('/', TournamentIndex::class)->name('tournaments.index');
     Route::get('/tournaments/{tournament}', TournamentShow::class)->name('tournaments.show');
 });
+
+// Area wasit — proteksi auth ditangani di dalam masing-masing komponen (mount)
+Route::get('/wasit', WasitDashboard::class)->name('wasit.dashboard');
+Route::get('/wasit/{code}', WasitBracket::class)->name('wasit.bracket');
 
 Route::get('/scoreboard/{gameMatch}', Scoreboard::class)->name('scoreboard.show');
 Route::get('/t/{code}/scoreboard/{gameMatch}', Scoreboard::class)->name('public.scoreboard');

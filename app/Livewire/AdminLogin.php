@@ -31,7 +31,8 @@ class AdminLogin extends Component
 
         if (Auth::attempt(['email' => $this->email, 'password' => $this->password], $this->remember)) {
             session()->regenerate();
-            $this->redirectIntended('/admin');
+            $target = Auth::user()->role === 'wasit' ? '/wasit' : '/admin';
+            $this->redirectIntended($target);
             return;
         }
 
