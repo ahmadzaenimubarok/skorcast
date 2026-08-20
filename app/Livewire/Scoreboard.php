@@ -27,6 +27,7 @@ class Scoreboard extends Component
     public bool $controlActive = false;   // true kalau device ini pemegang lock
     public ?string $lockOwnerLabel = null; // untuk pesan peringatan
     private ?string $sessionId = null;
+    public bool $isWasit = false;   // true kalau operator adalah wasit (bukan admin)
 
     /**
      * Lifecycle: setiap request Livewire (klik/poll) me-rehydrate komponen.
@@ -54,6 +55,9 @@ class Scoreboard extends Component
         if (request()->route()->named('public.scoreboard')) {
             $this->readonly = true;
         }
+
+        // Deteksi sesi wasit → navigasi kembali ke panel wasit (bukan admin)
+        $this->isWasit = auth()->check() && auth()->user()->role === 'wasit';
 
         if (!$this->match->games_detail) {
             $this->match->initGames();
@@ -103,8 +107,13 @@ class Scoreboard extends Component
             return;
         }
 
-        // Lock sudah dilepas/dialihkan → redirect ke detail turnamen
-        $this->redirect('/admin/tournaments/' . $this->match->tournament_id);
+        // Lock sudah dilepas/dialihkan → balik ke bracket sebelumnya
+        // (wasit → panel wasit, bukan admin)
+        if ($this->isWasit) {
+            $this->redirect($this->tournamentCode ? '/wasit/' . $this->tournamentCode : '/wasit');
+        } else {
+            $this->redirect('/admin/tournaments/' . $this->match->tournament_id);
+        }
     }
 
     public function refreshState(): void
@@ -183,6 +192,9 @@ class Scoreboard extends Component
         $gameWinner = $this->match->gameWinner($t1, $t2);
 
         if ($gameWinner !== null) {
+            // Game over — catat waktu selesai game ini
+            $detail[$idx]['finished_at'] = now()->toDateTimeString();
+
             // Game over — check if match is also over
             [$w1, $w2] = $this->recalculateGamesWon($detail);
             $this->match->score1 = $w1;
@@ -256,6 +268,8 @@ class Scoreboard extends Component
 
         if ($this->readonly && $code) {
             $this->redirect('/t/' . $code);
+        } elseif ($this->isWasit) {
+            $this->redirect($this->tournamentCode ? '/wasit/' . $this->tournamentCode : '/wasit');
         } else {
             $this->redirect('/admin/tournaments/' . $tournamentId);
         }
@@ -292,7 +306,12 @@ class Scoreboard extends Component
         if ($this->readonly) return;
         if ($this->lockedByOther) return;          // dikunci device lain → blokir
         $detail = $this->match->games_detail;
-        $detail[] = ['t1' => 0, 't2' => 0];
+        $detail[] = [
+            't1' => 0,
+            't2' => 0,
+            'started_at' => now()->toDateTimeString(),
+            'finished_at' => null,
+        ];
         $this->match->games_detail = $detail;
         $this->match->save();
         $this->showSwitchCourt = false;
@@ -302,9 +321,13 @@ class Scoreboard extends Component
     {
         $this->refreshState();
 
-        $closeUrl = $this->readonly
-            ? ($this->tournamentCode ? '/t/' . $this->tournamentCode : '')
-            : '/admin/tournaments/' . $this->match->tournament_id;
+        if ($this->readonly) {
+            $closeUrl = $this->tournamentCode ? '/t/' . $this->tournamentCode : '';
+        } elseif ($this->isWasit) {
+            $closeUrl = $this->tournamentCode ? '/wasit/' . $this->tournamentCode : '/wasit';
+        } else {
+            $closeUrl = '/admin/tournaments/' . $this->match->tournament_id;
+        }
 
         return view('livewire.scoreboard', ['closeUrl' => $closeUrl])
             ->layout('layouts.scoreboard', ['closeUrl' => $closeUrl]);

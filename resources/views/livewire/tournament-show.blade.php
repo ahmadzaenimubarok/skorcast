@@ -218,17 +218,17 @@
                             wire:model="participantName"
                             type="text"
                             placeholder="Nama peserta..."
-                            class="flex-1 h-11 px-4 bg-gray-800 border border-gray-700 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            class="flex-1 h-12 px-4 bg-gray-800 border border-gray-600 rounded-lg text-gray-100 placeholder-gray-500 text-base focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                         >
                         @if($tournament->use_groups)
-                            <select wire:model="participantGroup" class="h-11 bg-gray-800 text-gray-200 border border-gray-700 rounded-lg px-3 text-sm">
+                            <select wire:model="participantGroup" class="h-12 bg-gray-800 text-gray-200 border border-gray-600 rounded-lg px-3 text-sm">
                                 <option value="">Kelompok...</option>
                                 @foreach($tournament->groupOptions() as $key => $label)
                                     <option value="{{ $key }}">{{ $label }}</option>
                                 @endforeach
                             </select>
                         @endif
-                        <button type="submit" class="px-5 h-11 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-lg transition-colors text-sm">
+                        <button type="submit" class="px-5 h-12 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-lg transition-colors text-sm">
                             + Tambah
                         </button>
                     </div>
@@ -456,8 +456,10 @@
                         @foreach ($bracketLayout['rounds'] as $round => $matches)
                             <div class="absolute top-0" style="left: {{ $bracketLayout['roundLeft'][$round] }}px;">
                                 @foreach ($matches as $match)
-                                    <div class="absolute w-56 flex flex-col justify-center p-3 bg-gray-800 border rounded-lg
-                                                {{ $match->status === 'ongoing' ? 'border-amber-600' : ($match->status === 'completed' ? 'border-emerald-800' : 'border-gray-700') }}"
+                                    <div @if($match->status === 'completed' && $match->winner) wire:click="openMatchDetail({{ $match->id }})" @endif
+                                         class="absolute w-56 flex flex-col justify-center p-3 bg-gray-800 border rounded-lg
+                                                {{ $match->status === 'ongoing' ? 'border-amber-600' : ($match->status === 'completed' ? 'border-emerald-800' : 'border-gray-700') }}
+                                                {{ $match->status === 'completed' && $match->winner ? 'cursor-pointer hover:border-emerald-600 hover:bg-gray-700/60 transition-colors' : '' }}"
                                          style="top: {{ $bracketLayout['tops'][$match->id] }}px; height: {{ $bracketLayout['cardH'] }}px;">
                                         {{-- Team 1 --}}
                                         <div class="flex items-center justify-between {{ $match->isTeam1Winner() ? 'text-emerald-400 font-semibold' : ($match->team1 ? 'text-gray-200' : 'text-gray-600') }}">
@@ -526,8 +528,6 @@
                                                 @endif
                                             </div>
                                         @endif
-
-                                        {{-- Edit Score Modal inline --}}
                                         @if($updatingMatchId === $match->id)
                                             <div class="mt-3 p-3 bg-gray-900 rounded-lg border border-gray-600">
                                                 <div class="flex gap-2 items-center mb-2">
@@ -599,4 +599,7 @@
             </div>
         </div>
     @endif
+
+    @include('livewire.partials.match-detail-modal')
+
 </div>

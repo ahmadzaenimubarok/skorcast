@@ -6,6 +6,8 @@
 .phpactor.json
 .phpunit.result.cache
 /.codex
+/.hermes/
+public/og-image.old.*
 /.cursor/
 /.idea
 /.nova

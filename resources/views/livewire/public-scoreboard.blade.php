@@ -7,6 +7,18 @@
     {{-- PANEL ATAS: Black — info, game status, games won            --}}
     {{-- ============================================================ --}}
     <div class="flex-none h-14 bg-black flex items-center gap-3 z-10 header-safe">
+        {{-- Back --}}
+        <button @click="window.location.href = '/'"
+                class="flex-none w-11 h-11 flex items-center justify-center
+                       bg-white/10 hover:bg-white/20 text-white/70 hover:text-white
+                       rounded-xl transition-all active:scale-95"
+                title="Kembali">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 12H5"/>
+                <path d="M12 19l-7-7 7-7"/>
+            </svg>
+        </button>
+
         {{-- Fullscreen --}}
         <button @click="toggleFullscreen()"
                 class="flex-none w-11 h-11 flex items-center justify-center
@@ -104,8 +116,8 @@
                 <div @mousedown.prevent="if(clickable) startLongPress(1, $event)"
                      @mouseup.prevent="if(clickable) clickTeam(1, $event); endLongPress($event)"
                      @mouseleave.prevent="if(clickable) endLongPress()"
-                     @touchstart.prevent="if(clickable) startLongPress(1, $event)"
-                     @touchend.prevent="if(clickable) clickTeam(1, $event); endLongPress($event)"
+                     @touchstart.prevent="if(clickable) touchStart(1, $event)"
+                     @touchend.prevent="if(clickable) touchEnd(1, $event)"
                      class="flex-1 flex flex-col items-center justify-center
                             rounded-xl transition-colors duration-150"
                      :class="{
@@ -137,8 +149,8 @@
                 <div @mousedown.prevent="if(clickable) startLongPress(2, $event)"
                      @mouseup.prevent="if(clickable) clickTeam(2, $event); endLongPress($event)"
                      @mouseleave.prevent="if(clickable) endLongPress()"
-                     @touchstart.prevent="if(clickable) startLongPress(2, $event)"
-                     @touchend.prevent="if(clickable) clickTeam(2, $event); endLongPress($event)"
+                     @touchstart.prevent="if(clickable) touchStart(2, $event)"
+                     @touchend.prevent="if(clickable) touchEnd(2, $event)"
                      class="flex-1 flex flex-col items-center justify-center
                             rounded-xl transition-colors duration-150"
                      :class="{
@@ -247,6 +259,8 @@ function scoreboardLocal() {
         timers: { 1: null, 2: null },
         isLongPress: false,
         activeTouchId: null,      // lock multi-touch: hanya 1 jari yg dihitung
+        interactionLock: false,   // blokir multi-touch: hanya jari primer yg diproses
+        primaryTouchTeam: null,
         cooldown: false,
         isFullscreen: false,
 
@@ -356,7 +370,6 @@ function scoreboardLocal() {
 
         // ---- Actions ----
         clickTeam(team, e) {
-            if (e && e.touches && e.touches.length > 1) return; // tolak multi-touch
             if (this.isLongPress) return;
             if (this.cooldown) return;
             if (this.matchOver || this.showSwitchCourt) return;
@@ -387,6 +400,31 @@ function scoreboardLocal() {
             if (this.timers[2]) { clearTimeout(this.timers[2]); this.timers[2] = null; }
             this.activeTouchId = null;
             setTimeout(() => { this.isLongPress = false; }, 50);
+        },
+
+        // ---- Multi-touch guard: hanya 1 jari (primer) yg diproses ----
+        touchStart(team, e) {
+            if (this.cooldown || !this.clickable) return;
+            if (this.interactionLock) return;        // jari ke-2+ diabaikan total
+            this.interactionLock = true;
+            this.primaryTouchTeam = team;
+            this.startLongPress(team, e);
+        },
+
+        touchEnd(team, e) {
+            if (!this.clickable) {
+                this.interactionLock = false;
+                this.primaryTouchTeam = null;
+                return;
+            }
+            if (team === this.primaryTouchTeam) {
+                this.endLongPress(e);
+                if (!this.isLongPress) this.clickTeam(team, e);
+            }
+            if (!e.touches || e.touches.length === 0) {
+                this.interactionLock = false;
+                this.primaryTouchTeam = null;
+            }
         },
 
         increment(side) {

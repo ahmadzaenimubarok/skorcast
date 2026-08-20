@@ -33,11 +33,11 @@
                 wire:model="newName"
                 type="text"
                 placeholder="Nama turnamen baru..."
-                class="flex-1 h-11 px-4 bg-gray-800 border border-gray-700 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                class="flex-1 h-12 px-4 bg-gray-800 border border-gray-600 rounded-lg text-gray-100 placeholder-gray-500 text-base focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
             >
             <button
                 type="submit"
-                class="px-6 h-11 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-lg transition-colors"
+                class="px-6 h-12 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-lg transition-colors"
             >
                 + Buat
             </button>

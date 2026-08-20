@@ -3,12 +3,13 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ $title ?? 'Skor Cast — Turnamen & Skor Badminton' }}</title>
+    <title>@yield('title', 'Skor Cast — Turnamen & Skor Badminton')</title>
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-    <meta name="description" content="{{ $description ?? 'Skor Cast — aplikasi turnamen & skor badminton untuk komunitas. Peserta daftar lewat link, skor masuk dari HP, bracket tersusun otomatis.' }}">
+    <meta name="description" content="@yield('meta_description', 'Skor Cast — aplikasi turnamen & skor badminton untuk komunitas. Peserta daftar lewat link, skor masuk dari HP, bracket tersusun otomatis.')">
     <meta name="robots" content="index, follow, max-image-preview:large">
+    @stack('meta')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
     <style>

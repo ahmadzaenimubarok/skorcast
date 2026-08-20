@@ -49,7 +49,7 @@ Akses: hanya lihat + masuk bracket untuk input skor (tombol Lihat Bracket -> /w/
                                 <p class="text-sm text-[#9FB0A6]">{{ $t->participants_count }} peserta · {{ $t->teams_count }} tim</p>
                             </div>
                             <span class="flex-none self-start sm:self-auto text-xs font-medium px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 whitespace-nowrap">Berjalan</span>
-                            <a href="/w/{{ $t->code }}"
+                            <a href="{{ route('wasit.bracket', $t->code) }}"
                                class="flex-none inline-flex items-center justify-center h-11 px-4 bg-[#4ADE80] hover:bg-[#5FE98F] active:scale-[0.98] text-[#0B0E0C] text-sm font-bold rounded-xl transition-all no-underline">
                                 Masuk Bracket
                             </a>
@@ -78,7 +78,7 @@ Akses: hanya lihat + masuk bracket untuk input skor (tombol Lihat Bracket -> /w/
                                 </p>
                             </div>
                             <span class="flex-none self-start sm:self-auto text-xs font-medium px-2.5 py-1 rounded-full bg-white/5 text-[#9FB0A6] border border-white/15 whitespace-nowrap">Belum mulai</span>
-                            <a href="/w/{{ $t->code }}"
+                            <a href="{{ route('wasit.bracket', $t->code) }}"
                                class="flex-none inline-flex items-center justify-center h-11 px-4 border border-white/15 hover:border-white/30 hover:bg-white/5 text-[#F2F6F3] text-sm font-semibold rounded-xl transition-all no-underline">
                                 Lihat Bracket
                             </a>
@@ -104,7 +104,7 @@ Akses: hanya lihat + masuk bracket untuk input skor (tombol Lihat Bracket -> /w/
                                 <p class="text-sm text-[#9FB0A6]">{{ $t->participants_count }} peserta · {{ $t->teams_count }} tim</p>
                             </div>
                             <span class="flex-none self-start sm:self-auto text-xs font-medium px-2.5 py-1 rounded-full bg-[#4ADE80]/10 text-[#4ADE80] border border-[#4ADE80]/30 whitespace-nowrap">Selesai</span>
-                            <a href="/w/{{ $t->code }}"
+                            <a href="{{ route('wasit.bracket', $t->code) }}"
                                class="flex-none inline-flex items-center justify-center h-11 px-4 border border-white/15 hover:border-white/30 hover:bg-white/5 text-[#F2F6F3] text-sm font-semibold rounded-xl transition-all no-underline">
                                 Lihat Hasil
                             </a>

@@ -107,7 +107,12 @@ class GameMatch extends Model
      */
     public function initGames(): void
     {
-        $this->games_detail = [['t1' => 0, 't2' => 0]];
+        $this->games_detail = [[
+            't1' => 0,
+            't2' => 0,
+            'started_at' => now()->toDateTimeString(),
+            'finished_at' => null,
+        ]];
         $this->score1 = 0;
         $this->score2 = 0;
         $this->save();
@@ -241,5 +246,40 @@ class GameMatch extends Model
     {
         if ($this->status !== 'completed') return false;
         return is_null($this->team1_id) || is_null($this->team2_id);
+    }
+
+    /**
+     * Waktu mulai game ke-i (Carbon|null). Disimpan sebagai string di games_detail.
+     */
+    public function gameStartedAt(int $index): ?\Carbon\Carbon
+    {
+        $game = $this->games_detail[$index] ?? null;
+        if (!$game || empty($game['started_at'])) return null;
+        return \Carbon\Carbon::parse($game['started_at']);
+    }
+
+    /**
+     * Waktu selesai game ke-i (Carbon|null).
+     */
+    public function gameFinishedAt(int $index): ?\Carbon\Carbon
+    {
+        $game = $this->games_detail[$index] ?? null;
+        if (!$game || empty($game['finished_at'])) return null;
+        return \Carbon\Carbon::parse($game['finished_at']);
+    }
+
+    /**
+     * Durasi game ke-i dalam format "Xm Ys" (string|null).
+     * Null kalau game belum selesai atau timestamp kosong.
+     */
+    public function gameDuration(int $index): ?string
+    {
+        $start = $this->gameStartedAt($index);
+        $end = $this->gameFinishedAt($index);
+        if (!$start || !$end) return null;
+        $secs = $start->diffInSeconds($end);
+        $m = intdiv($secs, 60);
+        $s = $secs % 60;
+        return $m > 0 ? "{$m}m {$s}s" : "{$s}s";
     }
 }

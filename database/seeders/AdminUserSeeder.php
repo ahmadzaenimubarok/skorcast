@@ -33,5 +33,22 @@ class AdminUserSeeder extends Seeder
         if (! env('ADMIN_PASSWORD')) {
             $this->command->info("Admin {$email} dibuat. Password: {$password}");
         }
+
+        // Akun wasit (role non-admin, boleh akses panel wasit)
+        $wasitEmail = env('WASIT_EMAIL', 'wasit@gmail.com');
+        $wasitPassword = env('WASIT_PASSWORD', Str::random(16));
+
+        User::updateOrCreate(
+            ['email' => $wasitEmail],
+            [
+                'name' => 'Wasit',
+                'role' => 'wasit',
+                'password' => $wasitPassword,
+            ]
+        );
+
+        if (! env('WASIT_PASSWORD')) {
+            $this->command->info("Wasit {$wasitEmail} dibuat. Password: {$wasitPassword}");
+        }
     }
 }

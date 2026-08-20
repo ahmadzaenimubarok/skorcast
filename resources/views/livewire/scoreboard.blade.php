@@ -31,25 +31,46 @@
           timer: null,
           isLongPress: false,
           cooldown: false,
-          clickTeam(team) {
-              if (this.isLongPress) return;
+          pressTeam: null,
+          activePointerId: null,
+          clickTeam(team, e) {
+              const pid = (e && e.pointerId !== undefined) ? e.pointerId : 'mouse';
+              if (this.activePointerId !== null && pid !== this.activePointerId) return;
+              if (this.isLongPress) { this.isLongPress = false; this.activePointerId = null; return; }
               if (this.cooldown) return;
+              // BERSIHKAN timer long-press: kalau tidak, timer 600ms sisa akan
+              // menembak decrement ~600ms setelah tap biasa -> skor +1 lalu -1.
+              clearTimeout(this.timer);
+              this.timer = null;
               this.cooldown = true;
+              this.activePointerId = null;
               $wire.increment(team);
               setTimeout(() => { this.cooldown = false; }, 400);
           },
-          startLongPress(team) {
+          startPress(team, e) {
               if (this.cooldown) return;
+              const pid = (e && e.pointerId !== undefined) ? e.pointerId : 'mouse';
+              if (this.activePointerId !== null && pid !== this.activePointerId) return;   // sudah ada pointer aktif
+              this.activePointerId = pid;
               this.isLongPress = false;
+              this.pressTeam = team;
+              clearTimeout(this.timer);   // amankan sisa timer dari press yg dibatalkan
               this.timer = setTimeout(() => {
                   this.isLongPress = true;
-                  $wire.decrement(team);
+                  if (!this.cooldown) {
+                      this.cooldown = true;
+                      $wire.decrement(team);
+                      setTimeout(() => { this.cooldown = false; }, 400);
+                  }
               }, 600);
           },
-          endLongPress() {
+          endPress(e) {
+              const pid = (e && e.pointerId !== undefined) ? e.pointerId : 'mouse';
+              if (this.activePointerId !== null && pid !== this.activePointerId) return;
               clearTimeout(this.timer);
               this.timer = null;
-              setTimeout(() => { this.isLongPress = false; }, 50);
+              this.isLongPress = false;
+              this.activePointerId = null;
           }
      @endif
       }"
@@ -70,7 +91,7 @@
                 Device lain sedang mengoperasikan scoreboard ini.<br>
                 Buka dari device yang sama untuk mengubah skor.
             </p>
-            <a href="/admin/tournaments/{{ $match->tournament_id }}"
+            <a href="{{ $closeUrl ?? '' }}"
                class="block w-full h-12 inline-flex items-center justify-center bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-xl transition-colors">
                 ← Kembali ke Turnamen
             </a>
@@ -201,14 +222,13 @@
 
                 {{-- LEFT SIDE (sensitive to court flip) --}}
                 <div @if($clickable)
-                     @mousedown.prevent="startLongPress({{ $leftTeamNum }})"
-                     @mouseup.prevent="clickTeam({{ $leftTeamNum }}); endLongPress()"
-                     @mouseleave.prevent="endLongPress()"
-                     @touchstart.prevent="startLongPress({{ $leftTeamNum }})"
-                     @touchend.prevent="clickTeam({{ $leftTeamNum }}); endLongPress()"
+                     @pointerdown.prevent="startPress({{ $leftTeamNum }}, $event)"
+                     @pointerup.prevent="clickTeam({{ $leftTeamNum }}, $event); endPress($event)"
+                     @pointercancel.prevent="endPress($event)"
+                     @pointerleave.prevent="endPress($event)"
                      @endif
                      class="flex-1 flex flex-col items-center justify-center
-                            @if($clickable) cursor-pointer select-none @endif rounded-xl transition-colors duration-150
+                            @if($clickable) cursor-pointer select-none touch-none @endif rounded-xl transition-colors duration-150
                             {{ $matchOver || !$clickable ? 'opacity-60 pointer-events-none' : 'hover:bg-white/5' }}
                             {{ $leftIsWinner ? 'ring-2 ring-emerald-400 ring-offset-2 ring-offset-[#1e1e2e]' : '' }}
                             @if($clickable) :class="cooldown ? 'bg-white/5 scale-[0.97]' : ''" @endif">
@@ -234,14 +254,13 @@
 
                 {{-- RIGHT SIDE --}}
                 <div @if($clickable)
-                     @mousedown.prevent="startLongPress({{ $rightTeamNum }})"
-                     @mouseup.prevent="clickTeam({{ $rightTeamNum }}); endLongPress()"
-                     @mouseleave.prevent="endLongPress()"
-                     @touchstart.prevent="startLongPress({{ $rightTeamNum }})"
-                     @touchend.prevent="clickTeam({{ $rightTeamNum }}); endLongPress()"
+                     @pointerdown.prevent="startPress({{ $rightTeamNum }}, $event)"
+                     @pointerup.prevent="clickTeam({{ $rightTeamNum }}, $event); endPress($event)"
+                     @pointercancel.prevent="endPress($event)"
+                     @pointerleave.prevent="endPress($event)"
                      @endif
                      class="flex-1 flex flex-col items-center justify-center
-                            @if($clickable) cursor-pointer select-none @endif rounded-xl transition-colors duration-150
+                            @if($clickable) cursor-pointer select-none touch-none @endif rounded-xl transition-colors duration-150
                             {{ $matchOver || !$clickable ? 'opacity-60 pointer-events-none' : 'hover:bg-white/5' }}
                             {{ $rightIsWinner ? 'ring-2 ring-emerald-400 ring-offset-2 ring-offset-[#1e1e2e]' : '' }}
                             @if($clickable) :class="cooldown ? 'bg-white/5 scale-[0.97]' : ''" @endif">

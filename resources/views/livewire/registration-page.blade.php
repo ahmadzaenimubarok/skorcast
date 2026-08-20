@@ -79,10 +79,10 @@
                     type="text"
                     placeholder="Nama lengkap..."
                     autocomplete="name"
-                    class="w-full px-4 py-3.5 bg-gray-800 border border-gray-700 rounded-xl text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-base"
+                    class="w-full px-4 py-3.5 bg-gray-800 border border-gray-600 rounded-xl text-gray-100 placeholder-gray-500 text-base focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 >
                 @if($tournament->use_groups)
-                    <select wire:model="group" class="w-full px-4 py-3.5 bg-gray-800 border border-gray-700 rounded-xl text-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-base">
+                    <select wire:model="group" class="w-full px-4 py-3.5 bg-gray-800 border border-gray-600 rounded-xl text-gray-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-base">
                         <option value="">Pilih kelompok...</option>
                         @foreach($tournament->groupOptions() as $key => $label)
                             @php

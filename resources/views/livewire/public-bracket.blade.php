@@ -1,3 +1,16 @@
+@section('title', '🏸 ' . $tournament->name . ' — Live Bracket | Skor Cast')
+@section('meta_description', 'Siapa juaranya? Pantau bracket live ' . $tournament->name . ' — Skor Cast 🏸')
+
+@push('meta')
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="🏸 {{ $tournament->name }} — Live Bracket">
+    <meta property="og:description" content="Siapa juaranya? Pantau bracket live {{ $tournament->name }} — Skor Cast 🏸">
+    <meta property="og:url" content="{{ request()->url() }}">
+    <meta property="og:site_name" content="Skor Cast">
+    <meta property="og:image" content="{{ url('/og-image.png') }}">
+    <meta name="twitter:card" content="summary_large_image">
+@endpush
+
 <div>
     {{-- Header --}}
     <div class="text-center mb-8 mt-4">
@@ -17,8 +30,35 @@
                     Live
                 </span>
             @endif
+            <button type="button" onclick="shareBracket()" id="shareBtn"
+                    class="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1 rounded-full bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700 transition-colors">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                Bagikan
+            </button>
         </div>
     </div>
+
+    <script>
+        function shareBracket() {
+            const url = window.location.href;
+            const title = @json($tournament->name);
+            const text = 'Ayo dukung tim favoritmu! Live bracket & skor di sini 🏸';
+            const btn = document.getElementById('shareBtn');
+            const reset = () => { btn.innerHTML = btn.dataset.label; };
+            if (!btn.dataset.label) btn.dataset.label = btn.innerHTML;
+            if (navigator.share) {
+                navigator.share({ title, text, url }).catch(() => {});
+            } else {
+                navigator.clipboard.writeText(text + ' ' + url).then(() => {
+                    btn.innerHTML = '<span class="text-emerald-400">✓ Tersalin!</span>';
+                    setTimeout(reset, 2000);
+                }).catch(() => {
+                    btn.innerHTML = '<span class="text-red-400">Gagal salin</span>';
+                    setTimeout(reset, 2000);
+                });
+            }
+        }
+    </script>
 
     {{-- Champion Banner --}}
     @if($champion)
@@ -49,8 +89,10 @@
                 @foreach ($bracketLayout['rounds'] as $round => $matches)
                     <div class="absolute top-0" style="left: {{ $bracketLayout['roundLeft'][$round] }}px;">
                         @foreach ($matches as $match)
-                            <div class="absolute w-64 flex flex-col bg-gray-900 border rounded-xl overflow-hidden
-                                        {{ $match->status === 'ongoing' ? 'border-amber-600/70' : ($match->status === 'completed' ? 'border-emerald-800/70' : 'border-gray-800') }} shadow-[0_1px_0_0_rgba(255,255,255,0.04)]"
+                            <div @if($match->status === 'completed' && $match->winner) wire:click="openMatchDetail({{ $match->id }})" @endif
+                                 class="absolute w-64 flex flex-col bg-gray-900 border rounded-xl overflow-hidden
+                                        {{ $match->status === 'ongoing' ? 'border-amber-600/70' : ($match->status === 'completed' ? 'border-emerald-800/70' : 'border-gray-800') }}
+                                        {{ $match->status === 'completed' && $match->winner ? 'cursor-pointer hover:border-emerald-600/70 hover:bg-gray-800/40 transition-colors' : '' }} shadow-[0_1px_0_0_rgba(255,255,255,0.04)]"
                                  style="top: {{ $bracketLayout['tops'][$match->id] }}px; height: {{ $bracketLayout['cardH'] }}px;">
 
                                 {{-- Team 1: nama+peserta kiri, kotak skor kanan --}}
@@ -173,6 +215,8 @@
         <a href="https://github.com/ahmadzaenimubarok/skorcast" target="_blank" class="hover:text-gray-500 transition-colors">🐙 GitHub</a>
         &middot; Skor Cast &middot; skorcast.online
     </div>
+
+    @include('livewire.partials.match-detail-modal')
 
     {{-- Livewire polling — live selama ada match yg berjalan --}}
     @if($tournament->status !== 'completed' && $tournament->gameMatches->contains(fn($m) => $m->status === 'ongoing'))

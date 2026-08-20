@@ -10,7 +10,15 @@ BRACKET WASIT: tampilan bracket untuk wasit.
     {{-- Header --}}
     <div class="text-center mb-8 mt-4">
         <div class="flex items-center justify-center gap-2 mb-2">
-            <a href="/wasit" class="text-xs text-[#9FB0A6] hover:text-[#F2F6F3] transition-colors no-underline">← Panel Wasit</a>
+            <a href="/wasit"
+               class="inline-flex items-center gap-1.5 h-11 px-3 rounded-xl
+                      bg-white/10 hover:bg-white/20 active:bg-white/15 active:scale-95
+                      text-[#F2F6F3] text-sm font-medium no-underline transition-all">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/>
+                </svg>
+                Panel Wasit
+            </a>
             <span class="text-xs px-2 py-0.5 rounded-full bg-[#4ADE80]/15 text-[#4ADE80] border border-[#4ADE80]/30 font-medium">Wasit</span>
         </div>
         <h1 class="text-4xl font-bold tracking-tight break-words">🏸 {{ $tournament->name }}</h1>
@@ -61,8 +69,10 @@ BRACKET WASIT: tampilan bracket untuk wasit.
                 @foreach ($bracketLayout['rounds'] as $round => $matches)
                     <div class="absolute top-0" style="left: {{ $bracketLayout['roundLeft'][$round] }}px;">
                         @foreach ($matches as $match)
-                            <div class="absolute w-64 flex flex-col bg-gray-900 border rounded-xl overflow-hidden
-                                        {{ $match->status === 'ongoing' ? 'border-amber-600/70' : ($match->status === 'completed' ? 'border-emerald-800/70' : 'border-gray-800') }} shadow-[0_1px_0_0_rgba(255,255,255,0.04)]"
+                            <div @if($match->status === 'completed' && $match->winner) wire:click="openMatchDetail({{ $match->id }})" @endif
+                                 class="absolute w-64 flex flex-col bg-gray-900 border rounded-xl overflow-hidden
+                                        {{ $match->status === 'ongoing' ? 'border-amber-600/70' : ($match->status === 'completed' ? 'border-emerald-800/70' : 'border-gray-800') }}
+                                        {{ $match->status === 'completed' && $match->winner ? 'cursor-pointer hover:border-emerald-600/70 hover:bg-gray-800/40 transition-colors' : '' }} shadow-[0_1px_0_0_rgba(255,255,255,0.04)]"
                                  style="top: {{ $bracketLayout['tops'][$match->id] }}px; height: {{ $bracketLayout['cardH'] }}px;">
 
                                 {{-- Team 1 --}}
@@ -146,18 +156,21 @@ BRACKET WASIT: tampilan bracket untuk wasit.
                                         Input Skor
                                     </a>
                                 @elseif($match->status === 'pending')
-                                    <div class="mt-auto h-9 flex items-center justify-center gap-1.5 text-xs font-medium border-t border-gray-800 text-gray-600">
-                                        Belum mulai
-                                    </div>
+                                    <button type="button" wire:click="startMatch({{ $match->id }})"
+                                        class="mt-auto h-9 w-full flex items-center justify-center gap-1.5 text-xs font-semibold border-t border-gray-800 bg-white/5 hover:bg-emerald-600 hover:text-white hover:border-emerald-700 text-gray-400 transition-colors cursor-pointer">
+                                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                                        Mulai
+                                    </button>
                                 @elseif($match->status === 'completed' && $match->winner)
-                                    <div class="mt-auto h-9 flex items-center justify-center gap-1.5 text-xs font-medium border-t border-gray-800 {{ $match->isBye() ? 'text-yellow-500' : 'text-emerald-400' }}">
+                                    <button type="button" wire:click="openMatchDetail({{ $match->id }})"
+                                        class="mt-auto h-9 w-full flex items-center justify-center gap-1.5 text-xs font-medium border-t border-gray-800 {{ $match->isBye() ? 'text-yellow-500' : 'text-emerald-400' }} hover:bg-white/5 transition-colors cursor-pointer">
                                         @if($match->isBye())
                                             ↪ {{ $match->winner->name }} (BYE)
                                         @else
                                             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                                             {{ $match->winner->name }}
                                         @endif
-                                    </div>
+                                    </button>
                                 @endif
                             </div>
                         @endforeach
@@ -189,6 +202,8 @@ BRACKET WASIT: tampilan bracket untuk wasit.
         <a href="https://github.com/ahmadzaenimubarok/skorcast" target="_blank" class="hover:text-gray-500 transition-colors">🐙 GitHub</a>
         &middot; Skor Cast &middot; skorcast.online
     </div>
+
+    @include('livewire.partials.match-detail-modal')
 
     {{-- Livewire polling — live selama ada match yg berjalan --}}
     @if($tournament->status !== 'completed' && $tournament->gameMatches->contains(fn($m) => $m->status === 'ongoing'))
